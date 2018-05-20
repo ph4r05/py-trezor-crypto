@@ -25,6 +25,18 @@ logger = logging.getLogger(__name__)
 ffi = FFI()
 
 
+def get_compile_args():
+    return [
+        '--std=c99',
+        '-fPIC',
+        '-DUSE_MONERO=1',
+        '-DUSE_KECCAK=1',
+        '-DUSE_LIBSODIUM',
+        '-DSODIUM_STATIC=1',
+        '-DRAND_PLATFORM_INDEPENDENT=1',
+    ]
+
+
 def only_files(headers, allowed):
     nheaders = []
     for h in headers:
@@ -106,6 +118,11 @@ def detect_compiler():
     raise ValueError('Compiler could not be detected')
 
 
+def get_fake_libs():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                        '../tools/pycparser/utils/fake_libc_include'))
+
+
 def preprocess(headers, compiler=None, use_fake_libs=True):
     """
     Runs preprocessor on the headers
@@ -120,20 +137,14 @@ def preprocess(headers, compiler=None, use_fake_libs=True):
 
     fake_libs = 'src'
     if use_fake_libs:
-        fake_libs = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                 '../tools/pycparser/utils/fake_libc_include'))
+        fake_libs = get_fake_libs()
 
     args = ['-nostdinc',
             '-E',
             '-D__attribute__(x)=',
             '-I%s' % fake_libs,
             '-Isrc/',
-            '-Isrc/monero',
-            '-DUSE_MONERO=1',
-            '-DUSE_KECCAK=1',
-            '-DUSE_LIBSODIUM',
-            '-DSODIUM_STATIC=1',
-            '-DRAND_PLATFORM_INDEPENDENT=1',]
+            ] + get_compile_args()
 
     try:
         p = subprocess.Popen([compiler] + args + headers, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -400,20 +411,62 @@ def main_cffi():
         tpl,
         include_dirs=['src/'],
         sources=c_files,
-        extra_compile_args=['--std=c99',
-                            '-fPIC',
-                            '-DUSE_MONERO=1',
-                            '-DUSE_KECCAK=1',
-                            '-DUSE_LIBSODIUM',
-                            '-DSODIUM_STATIC=1',
-                            '-DRAND_PLATFORM_INDEPENDENT=1',
-                            '-I.',
-                            '-I%s' % base_dir
-                            ] + sodium_flags[0],
+        extra_compile_args=get_compile_args() + [
+            '-I.',
+            '-I%s' % base_dir
+            ] + sodium_flags[0],
         extra_link_args=[] + sodium_flags[1])
 
     # https://cffi.readthedocs.org/en/latest/cdef.html#ffi-cdef-declaring-types-and-functions
     ffi.cdef(cffi_hdat)
+
+
+def ctypes_gen(includes=None, use_fake_libs=False, debug=False):
+    """
+    Generates ctypes types for trezor_crypto
+    :return:
+    """
+    from ctypeslib import clang2py
+    from pipes import quote
+
+    if includes is None:
+        includes = []
+
+    types_fname = os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_ctypes.py'))
+    func_fname = os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_cfunc.py'))
+
+    clang_args = get_compile_args() + [
+        '-Isrc/'
+    ]
+
+    for inc in includes:
+        clang_args.append('-I%s' % quote(inc))
+    if includes is None and os.path.exists('/usr/include'):
+        clang_args.append('-I%s' % quote('/usr/include'))
+    # detect default includes: gcc -xc -E -v /dev/null
+
+    base_dir = 'src'
+    h_files = ['src/hasher.h', 'src/rand.h', 'src/ed25519-donna/ed25519-donna.h']\
+               + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.h")) \
+               + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.h"))
+
+    args = [
+        'clang2py',
+        '--clang-args=%s' % quote(' '.join(clang_args)),
+        '-o%s' % quote(types_fname),
+        # 'src/hasher.h',
+        # 'src/rand.h',
+        # 'src/monero/monero.h',
+    ]
+    for cf in h_files:
+        args.append(quote(cf))
+
+    print(' '.join(args))
+
+    _back = sys.argv
+    sys.argv = args
+    clang2py.main()
+    sys.argv = _back
 
 
 def main():
@@ -424,12 +477,19 @@ def main():
     parser.add_argument('--debug', dest='debug', default=False, action='store_const', const=True,
                         help='Debug')
 
+    parser.add_argument('--fake-libs', dest='fake_libs', default=False, action='store_const', const=True,
+                        help='Use fake libs for stddef/stdint')
+
+    parser.add_argument('-I', dest='inc', default=[], nargs=argparse.ZERO_OR_MORE,
+                        help='Include directories')
+
     args = parser.parse_args()
     if args.action == 'cffi_h':
         _, tmp, cffi_h = load_h_cffi(refresh=True, debug=args.debug)
         print('CFFI header regenerated: %s, source: %s' % (cffi_h, tmp))
+
     elif args.action == 'ctypes':
-        pass
+        ctypes_gen(includes=args.inc, use_fake_libs=args.fake_libs, debug=args.debug)
 
 
 if __name__ == "__cffi__":
