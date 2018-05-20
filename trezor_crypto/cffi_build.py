@@ -6,6 +6,7 @@ import glob
 import os
 import re
 import sys
+import tempfile
 
 
 #
@@ -17,13 +18,26 @@ import sys
 ffi = FFI()
 
 
-def only_headers(headers, allowed):
+def only_files(headers, allowed):
     nheaders = []
     for h in headers:
         is_ok = False
         for allw in allowed:
             if h.endswith(allw):
                 is_ok = True
+                break
+        if is_ok:
+            nheaders.append(h)
+    return nheaders
+
+
+def remove_files(files, blacklist):
+    nheaders = []
+    for h in files:
+        is_ok = True
+        for blck in blacklist:
+            if h.endswith(blck):
+                is_ok = False
                 break
         if is_ok:
             nheaders.append(h)
@@ -47,13 +61,61 @@ def pkg_config(args):
     return None
 
 
-def preprocess(headers, compiler='gcc'):
+def libsodium_flags():
+    cflags = os.getenv('LIBSODIUM_CFLAGS', '')
+    ldflags = os.getenv('LIBSODIUM_LDLAGS', '-lsodium')
+    if cflags is None:
+        cflags = pkg_config(['--cflags', 'libsodium']).decode('utf8').split(' ')
+    else:
+        cflags = cflags.split(' ')
+
+    if ldflags is None:
+        ldflags = pkg_config(['--libs', 'libsodium']).decode('utf8').split(' ')
+    else:
+        ldflags = ldflags.split(' ')
+
+    return cflags, ldflags
+
+
+def get_compiler():
+    return os.getenv('CC', 'gcc')
+
+
+def detect_compiler():
+    en = os.getenv('CC', None)
+    if en is not None:
+        return en
+
+    guesses = ['gcc', 'clang']
+    for g in guesses:
+        try:
+            p = subprocess.Popen([g, '-v'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                continue
+        else:
+            if p.wait() == 0:
+                return g
+    raise ValueError('Compiler could not be detected')
+
+
+def preprocess(headers, compiler=None):
     p, t = None, None
+    if compiler is None:
+        compiler = detect_compiler()
 
     fake_libs = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tools/pycparser/utils/fake_libc_include'))
-    args = ['-nostdinc', '-E', '-D__attribute__(x)=',
-            '-I%s' % fake_libs, '-Isrc/', '-Isrc/monero',
-            '-DUSE_MONERO=1', '-DUSE_KECCAK=1']
+    args = ['-nostdinc',
+            '-E',
+            '-D__attribute__(x)=',
+            '-I%s' % fake_libs,
+            '-Isrc/',
+            '-Isrc/monero',
+            '-DUSE_MONERO=1',
+            '-DUSE_KECCAK=1',
+            '-DUSE_LIBSODIUM',
+            '-DSODIUM_STATIC=1',
+            '-DRAND_PLATFORM_INDEPENDENT=1',]
 
     try:
         p = subprocess.Popen([compiler] + args + headers, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #subprocess.DEVNULL)
@@ -68,22 +130,6 @@ def preprocess(headers, compiler='gcc'):
 
     t = p.stdout.read().strip()
     return t
-
-
-def libsodium_flags():
-    cflags = os.getenv('LIBSODIUM_CFLAGS', None)
-    ldflags = os.getenv('LIBSODIUM_LDLAGS', None)
-    if cflags is None:
-        cflags = pkg_config(['--cflags', 'libsodium']).decode('utf8').split(' ')
-    else:
-        cflags = cflags.split(' ')
-
-    if ldflags is None:
-        ldflags = pkg_config(['--libs', 'libsodium']).decode('utf8').split(' ')
-    else:
-        ldflags = ldflags.split(' ')
-
-    return cflags, ldflags
 
 
 def filter_headers(headers, base_dir):
@@ -126,7 +172,7 @@ def filter_headers(headers, base_dir):
     return b'\n'.join(hstack)
 
 
-def remove_defs(headers, base_dir):
+def remove_defs(headers, base_dir, blacklist):
     from pycparser import c_parser, c_ast, parse_file, c_generator
     parser = c_parser.CParser()
 
@@ -167,23 +213,20 @@ def remove_defs(headers, base_dir):
             self.ar = ArrayEval()
 
         def visit_FuncDef(self, node):
-            return  # print('%s at %s' % (node.decl.name, node.decl.coord))
+            return
 
         def visit_Typedef(self, node):
-            print('typedef: %s %s' % (node.name, node.coord))
-            if not take_coord(node.coord): return
+            if not take_coord(node.coord) or node.name in blacklist: return
             self.ar.visit(node)
             self.defs.append(node)
 
         def visit_FunDecl(self, node):
-            print('fun: %s %s' % (node.decl.name, node.coord))
-            if not take_coord(node.coord): return
+            if not take_coord(node.coord) or node.decl.name in blacklist: return
             self.ar.visit(node)
             self.defs.append(node)
 
         def visit_Decl(self, node):
-            print('decl: %s %s' % (node.name, node.coord))
-            if not take_coord(node.coord): return
+            if not take_coord(node.coord) or node.name in blacklist: return
             self.ar.visit(node)
             self.defs.append(node)
 
@@ -196,7 +239,7 @@ def remove_defs(headers, base_dir):
     to_parse = re.sub(r'\bsizeof\(uint64_t\)', '8', to_parse)
 
     ast = parser.parse(to_parse, debuglevel=0)
-    ast.show()
+    # ast.show()
 
     v = FuncDefVisitor()
     v.visit(ast)
@@ -208,27 +251,20 @@ def remove_defs(headers, base_dir):
     return genc
 
 
-print('='*180)
-sodium_flags = libsodium_flags()
-print(sodium_flags)
+def main_cffi():
+    sodium_flags = libsodium_flags()
 
-base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
 
-HEADERS = glob.glob(os.path.join(base_dir, "*.h")) \
-          + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.h")) \
-          + glob.glob(os.path.join(os.path.join(base_dir, 'ed25519-donna'), "*.h"))\
-          + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.h"))
+    CPPS = glob.glob(os.path.join(base_dir, "*.c")) \
+              + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.c")) \
+              + glob.glob(os.path.join(os.path.join(base_dir, 'ed25519-donna'), "*.c"))\
+              + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.c"))
 
-CPPS = glob.glob(os.path.join(base_dir, "*.c")) \
-          + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.c")) \
-          + glob.glob(os.path.join(os.path.join(base_dir, 'ed25519-donna'), "*.c"))\
-          + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.c"))
+    CPPS = remove_files(CPPS, ['rfc6979.c'])
 
-HEADERS = only_headers(HEADERS, ['monero.h'])
-print(HEADERS)
-
-# Wrapping header file for includes
-tpl = '''
+    # Wrapping header file for includes
+    tpl = '''
 #include <rand.h>
 #include <hasher.h>
 #include <hmac.h>
@@ -237,62 +273,57 @@ tpl = '''
 #include <base32.h>
 #include <base58.h>
 #include <monero/monero.h>
-'''
-
-with open('/tmp/header.h', 'w') as fh:
-    fh.write(tpl)
-
-HEADERS = ['/tmp/header.h']
-parsed = preprocess(HEADERS)
-parsed2 = filter_headers(parsed, base_dir)
-
-with open('/tmp/prepro.h', 'wb') as fh:
-    fh.write(parsed)
-with open('/tmp/prepro2.h', 'wb') as fh:
-    fh.write(parsed2)
-
-parsed2 = remove_defs(parsed, base_dir)
-with open('/tmp/prepro3.h', 'w') as fh:
-    fh.write(parsed2)
+    '''
 
 
-# for header in HEADERS:
-#     with open(header, "r") as hfile:
-#         ffi.cdef(hfile.read())
+    tmp_hdr = tempfile.NamedTemporaryFile(delete=False)
+    with tmp_hdr:
+        tmp_hdr.write(tpl.encode('utf8'))
+
+    HEADERS = [tmp_hdr.name]
+    parsed = preprocess(HEADERS)
+    parsed2 = filter_headers(parsed, base_dir)
+
+    with open('/tmp/prepro.h', 'wb') as fh:
+        fh.write(parsed)
+    with open('/tmp/prepro2.h', 'wb') as fh:
+        fh.write(parsed2)
+
+    parsed2 = remove_defs(parsed, base_dir, ['ge25519_scalarmult_base_choose_niels', 'ge25519_scalarmult_base_niels'])
+    with open('/tmp/prepro3.h', 'w') as fh:
+        fh.write(parsed2)
 
 
-# set_source is where you specify all the include statements necessary
-# for your code to work and also where you specify additional code you
-# want compiled up with your extension, e.g. custom C code you've written
-#
-# set_source takes mostly the same arguments as distutils' Extension, see:
-# https://cffi.readthedocs.org/en/latest/cdef.html#ffi-set-source-preparing-out-of-line-modules
-# https://docs.python.org/3/distutils/apiref.html#distutils.core.Extension
-ffi.set_source(
-    'trezor_crypto.cffi._cffi',
-    tpl,
-    include_dirs=['src/'],
-    sources=['monero/monero.c'],#CPPS,
-    extra_compile_args=['--std=c99',
-                        '-fPIC',
-                        '-DUSE_MONERO=1',
-                        '-DUSE_KECCAK=1',
-                        '-DUSE_LIBSODIUM',
-                        '-DSODIUM_STATIC=1',
-                        '-DRAND_PLATFORM_INDEPENDENT=1',
-                        '-I.',
-                        '-I%s' % base_dir
-                        ] + sodium_flags[0],
-    extra_link_args=[] + sodium_flags[1])
+    # set_source is where you specify all the include statements necessary
+    # for your code to work and also where you specify additional code you
+    # want compiled up with your extension, e.g. custom C code you've written
+    #
+    # set_source takes mostly the same arguments as distutils' Extension, see:
+    # https://cffi.readthedocs.org/en/latest/cdef.html#ffi-set-source-preparing-out-of-line-modules
+    # https://docs.python.org/3/distutils/apiref.html#distutils.core.Extension
+    ffi.set_source(
+        'trezor_crypto.tcry_cffi',
+        tpl,
+        include_dirs=['src/'],
+        sources=CPPS,
+        extra_compile_args=['--std=c99',
+                            '-fPIC',
+                            '-DUSE_MONERO=1',
+                            '-DUSE_KECCAK=1',
+                            '-DUSE_LIBSODIUM',
+                            '-DSODIUM_STATIC=1',
+                            '-DRAND_PLATFORM_INDEPENDENT=1',
+                            '-I.',
+                            '-I%s' % base_dir
+                            ] + sodium_flags[0],
+        extra_link_args=[] + sodium_flags[1])
 
-# declare the functions, variables, etc. from the stuff in set_source
-# that you want to access from your C extension:
-# https://cffi.readthedocs.org/en/latest/cdef.html#ffi-cdef-declaring-types-and-functions
-# ffi.cdef(
-#     """
-#     int scalar_int_add(int a, int b);
-#     int np_int32_add(int32_t* a, int32_t* b, int32_t* out, int size);
-#     """)
 
-ffi.cdef(parsed2)
+    # https://cffi.readthedocs.org/en/latest/cdef.html#ffi-cdef-declaring-types-and-functions
+    ffi.cdef(parsed2)
+
+
+if __name__ == "__cffi__":
+    main_cffi()
+
 
