@@ -1,0 +1,9 @@
+include README.md
+include LICENSE
+include *.sh
+include *.md
+include src/*
+include tools/*
+graft src
+graft tools
+
