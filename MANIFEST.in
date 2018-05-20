@@ -4,6 +4,8 @@ include *.sh
 include *.md
 include src/*
 include tools/*
+include data/*
 graft src
 graft tools
+graft data
 
