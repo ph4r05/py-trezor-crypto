@@ -1,3 +1,6 @@
 [submodule "src"]
 	path = src
 	url = git@github.com:ph4r05/trezor-crypto.git
+[submodule "tools/pycparser"]
+	path = tools/pycparser
+	url = https://github.com/eliben/pycparser.git
