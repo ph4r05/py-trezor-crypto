@@ -10,6 +10,7 @@ import tempfile
 import argparse
 import pkg_resources
 import logging
+from pycparser import c_parser, c_ast, c_generator
 
 
 #
@@ -35,6 +36,53 @@ def get_compile_args():
         '-DSODIUM_STATIC=1',
         '-DRAND_PLATFORM_INDEPENDENT=1',
     ]
+
+
+def get_blacklisted_funcs():
+    return [
+        'ge25519_scalarmult_base_choose_niels',
+        'ge25519_scalarmult_base_niels'
+    ]
+
+
+def get_main_header():
+    # root header file to process - including all components for the module
+    tpl = '''
+#include <rand.h>
+#include <hasher.h>
+#include <hmac.h>
+#include <pbkdf2.h>
+#include <bignum.h>
+#include <base32.h>
+#include <base58.h>
+#include <monero/monero.h>
+            '''
+    return tpl
+
+
+def replace_sizeofs(to_parse):
+    to_parse = re.sub(r'\bsizeof\(uint8_t\)', '1', to_parse)
+    to_parse = re.sub(r'\bsizeof\(uint16_t\)', '2', to_parse)
+    to_parse = re.sub(r'\bsizeof\(uint32_t\)', '4', to_parse)
+    to_parse = re.sub(r'\bsizeof\(uint64_t\)', '8', to_parse)
+    return to_parse
+
+
+def get_basedir():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
+
+
+def get_fake_libs():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                        '../tools/pycparser/utils/fake_libc_include'))
+
+
+def get_cffi_h_fname():
+    try:
+        cffi_h = pkg_resources.resource_filename(__name__, os.path.join('..', 'data', 'cffi.h'))
+    except:
+        cffi_h = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'cffi.h'))
+    return cffi_h
 
 
 def only_files(headers, allowed):
@@ -116,11 +164,6 @@ def detect_compiler():
             if p.wait() == 0:
                 return g
     raise ValueError('Compiler could not be detected')
-
-
-def get_fake_libs():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                        '../tools/pycparser/utils/fake_libc_include'))
 
 
 def preprocess(headers, compiler=None, use_fake_libs=True):
@@ -210,7 +253,37 @@ def filter_headers(headers, base_dir):
     return b'\n'.join(hstack)
 
 
-def remove_defs(headers, base_dir, blacklist):
+def eval_ast(node):
+    if isinstance(node, c_ast.BinaryOp):
+        if node.op == '/':
+            return eval_ast(node.left) // eval_ast(node.right)
+        elif node.op == '+':
+            return eval_ast(node.left) + eval_ast(node.right)
+        elif node.op == '-':
+            return eval_ast(node.left) - eval_ast(node.right)
+        elif node.op == '*':
+            return eval_ast(node.left) * eval_ast(node.right)
+        else:
+            raise ValueError('Unknown op: %s' % node.op)
+    elif isinstance(node, c_ast.Constant):
+        return int(node.value)
+    else:
+        raise ValueError('Unknown node: %s' % node)
+
+
+class ArrayEval(c_ast.NodeVisitor):
+    def visit_ArrayDecl(self, node):
+        dim_val = eval_ast(node.dim)
+        node.dim = c_ast.Constant('int', '%s' % dim_val)
+
+
+def coord_path(coord):
+    if coord is None or coord.file is None or coord.file.startswith('<'):
+        return None
+    return os.path.abspath(coord.file)
+
+
+def remove_defs(headers, base_dir, blacklist, take_typedefs=True, take_funcs=True, take_decls=True, **kwargs):
     """
     Keeps only type definitions and function declarations.
     :param headers:
@@ -218,39 +291,11 @@ def remove_defs(headers, base_dir, blacklist):
     :param blacklist:
     :return:
     """
-    from pycparser import c_parser, c_ast, c_generator
     parser = c_parser.CParser()
-
-    def coord_path(coord):
-        if coord is None or coord.file is None or coord.file.startswith('<'):
-            return None
-        return os.path.abspath(coord.file)
 
     def take_coord(coord):
         pth = coord_path(coord)
         return pth is not None and pth.startswith(base_dir)
-
-    def eval_dat(node):
-        if isinstance(node, c_ast.BinaryOp):
-            if node.op == '/':
-                return eval_dat(node.left) // eval_dat(node.right)
-            elif node.op == '+':
-                return eval_dat(node.left) + eval_dat(node.right)
-            elif node.op == '-':
-                return eval_dat(node.left) - eval_dat(node.right)
-            elif node.op == '*':
-                return eval_dat(node.left) * eval_dat(node.right)
-            else:
-                raise ValueError('Unknown op: %s' % node.op)
-        elif isinstance(node, c_ast.Constant):
-            return int(node.value)
-        else:
-            raise ValueError('Unknown node: %s' % node)
-
-    class ArrayEval(c_ast.NodeVisitor):
-        def visit_ArrayDecl(self, node):
-            dim_val = eval_dat(node.dim)
-            node.dim = c_ast.Constant('int', '%s' % dim_val)
 
     class FuncDefVisitor(c_ast.NodeVisitor):
         def __init__(self):
@@ -261,30 +306,27 @@ def remove_defs(headers, base_dir, blacklist):
             return
 
         def visit_Typedef(self, node):
-            if not take_coord(node.coord) or node.name in blacklist: return
+            if not take_coord(node.coord) or node.name in blacklist or not take_typedefs: return
             self.ar.visit(node)
             self.defs.append(node)
 
         def visit_FunDecl(self, node):
-            if not take_coord(node.coord) or node.decl.name in blacklist: return
+            if not take_coord(node.coord) or node.decl.name in blacklist or not take_funcs: return
             self.ar.visit(node)
             self.defs.append(node)
 
         def visit_Decl(self, node):
-            if not take_coord(node.coord) or node.name in blacklist: return
+            if not take_coord(node.coord) or node.name in blacklist or not take_decls: return
+            if 'static' in node.storage: return
             self.ar.visit(node)
             self.defs.append(node)
 
     to_parse = headers.decode('utf8')
 
     # quick hack for sizeof
-    to_parse = re.sub(r'\bsizeof\(uint8_t\)', '1', to_parse)
-    to_parse = re.sub(r'\bsizeof\(uint16_t\)', '2', to_parse)
-    to_parse = re.sub(r'\bsizeof\(uint32_t\)', '4', to_parse)
-    to_parse = re.sub(r'\bsizeof\(uint64_t\)', '8', to_parse)
+    to_parse = replace_sizeofs(to_parse)
 
     ast = parser.parse(to_parse, debuglevel=0)
-    # ast.show()
 
     v = FuncDefVisitor()
     v.visit(ast)
@@ -311,35 +353,13 @@ def generate_cffi_header(base_dir, tpl, debug=False, **kwargs):
         with open('/tmp/prepro2.h', 'wb') as fh:
             fh.write(parsed2)
 
-    parsed2 = remove_defs(parsed, base_dir, [
-        'ge25519_scalarmult_base_choose_niels',
-        'ge25519_scalarmult_base_niels'
-    ])
+    parsed2 = remove_defs(parsed, base_dir, get_blacklisted_funcs())
 
     if debug:
         with open('/tmp/prepro3.h', 'w') as fh:
             fh.write(parsed2)
 
     return parsed2, tmp_hdr
-
-
-def get_main_header():
-    # root header file to process - including all components for the module
-    tpl = '''
-#include <rand.h>
-#include <hasher.h>
-#include <hmac.h>
-#include <pbkdf2.h>
-#include <bignum.h>
-#include <base32.h>
-#include <base58.h>
-#include <monero/monero.h>
-            '''
-    return tpl
-
-
-def get_basedir():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
 
 
 def load_h_cffi(base_dir=None, tpl=None, refresh=False, cffi_h=None, debug=False, **kwargs):
@@ -351,10 +371,7 @@ def load_h_cffi(base_dir=None, tpl=None, refresh=False, cffi_h=None, debug=False
     tmp_hdr = None
     cffi_hdat = None
     if cffi_h is None:
-        try:
-            cffi_h = pkg_resources.resource_filename(__name__, os.path.join('..', 'data', 'cffi.h'))
-        except:
-            cffi_h = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'cffi.h'))
+        cffi_h = get_cffi_h_fname()
 
     if os.path.exists(cffi_h) and not refresh:
         logger.debug('Using existing CFFI header file')
@@ -454,9 +471,6 @@ def ctypes_gen(includes=None, use_fake_libs=False, debug=False):
         'clang2py',
         '--clang-args=%s' % quote(' '.join(clang_args)),
         '-o%s' % quote(types_fname),
-        # 'src/hasher.h',
-        # 'src/rand.h',
-        # 'src/monero/monero.h',
     ]
     for cf in h_files:
         args.append(quote(cf))
