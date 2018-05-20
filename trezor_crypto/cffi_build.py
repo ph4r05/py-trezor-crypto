@@ -7,14 +7,21 @@ import os
 import re
 import sys
 import tempfile
+import argparse
+import pkg_resources
+import logging
 
 
 #
-# ctypes: pip install ctypeslib2
+# ctypes:
+#   - pip install ctypeslib2
+#   - copy libcland.dylib to the current directory
+#
 # ./venv/bin/clang2py --clang-args='-Isrc/ -DUSE_KECCAK=1 -DUSE_MONERO=1 -I/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include' src/monero/*.h
 #
 
 
+logger = logging.getLogger(__name__)
 ffi = FFI()
 
 
@@ -99,12 +106,23 @@ def detect_compiler():
     raise ValueError('Compiler could not be detected')
 
 
-def preprocess(headers, compiler=None):
+def preprocess(headers, compiler=None, use_fake_libs=True):
+    """
+    Runs preprocessor on the headers
+    :param headers:
+    :param compiler: compiler executable, otherwise autodetected (CC env / gcc / clang)
+    :param use_fake_libs: use pycparser fake libs for easier parsing
+    :return:
+    """
     p, t = None, None
     if compiler is None:
         compiler = detect_compiler()
 
-    fake_libs = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tools/pycparser/utils/fake_libc_include'))
+    fake_libs = 'src'
+    if use_fake_libs:
+        fake_libs = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                 '../tools/pycparser/utils/fake_libc_include'))
+
     args = ['-nostdinc',
             '-E',
             '-D__attribute__(x)=',
@@ -118,7 +136,7 @@ def preprocess(headers, compiler=None):
             '-DRAND_PLATFORM_INDEPENDENT=1',]
 
     try:
-        p = subprocess.Popen([compiler] + args + headers, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  #subprocess.DEVNULL)
+        p = subprocess.Popen([compiler] + args + headers, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     except OSError as e:
         if e.errno != errno.ENOENT:
@@ -133,6 +151,15 @@ def preprocess(headers, compiler=None):
 
 
 def filter_headers(headers, base_dir):
+    """
+    Processes header file produced by the preprocessor and keeps only records coming from
+    the original project (i.e., skipping standard definitions from compiler include folders,
+    e.g., uint8, ...)
+
+    :param headers:
+    :param base_dir:
+    :return:
+    """
     lns = headers.split(b'\n')
     base_dir = bytes(base_dir, 'utf8')
     hstack = []
@@ -173,7 +200,14 @@ def filter_headers(headers, base_dir):
 
 
 def remove_defs(headers, base_dir, blacklist):
-    from pycparser import c_parser, c_ast, parse_file, c_generator
+    """
+    Keeps only type definitions and function declarations.
+    :param headers:
+    :param base_dir:
+    :param blacklist:
+    :return:
+    """
+    from pycparser import c_parser, c_ast, c_generator
     parser = c_parser.CParser()
 
     def coord_path(coord):
@@ -251,19 +285,35 @@ def remove_defs(headers, base_dir, blacklist):
     return genc
 
 
-def main_cffi():
-    sodium_flags = libsodium_flags()
+def generate_cffi_header(base_dir, tpl, debug=False, **kwargs):
+    tmp_hdr = tempfile.NamedTemporaryFile(prefix='tcry_root_', suffix='.h', delete=False)
+    with tmp_hdr:
+        tmp_hdr.write(tpl.encode('utf8'))
 
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
+    headers = [tmp_hdr.name]
+    parsed = preprocess(headers)
+    parsed2 = filter_headers(parsed, base_dir)
 
-    CPPS = glob.glob(os.path.join(base_dir, "*.c")) \
-              + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.c")) \
-              + glob.glob(os.path.join(os.path.join(base_dir, 'ed25519-donna'), "*.c"))\
-              + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.c"))
+    if debug:
+        with open('/tmp/prepro.h', 'wb') as fh:
+            fh.write(parsed)
+        with open('/tmp/prepro2.h', 'wb') as fh:
+            fh.write(parsed2)
 
-    CPPS = remove_files(CPPS, ['rfc6979.c'])
+    parsed2 = remove_defs(parsed, base_dir, [
+        'ge25519_scalarmult_base_choose_niels',
+        'ge25519_scalarmult_base_niels'
+    ])
 
-    # Wrapping header file for includes
+    if debug:
+        with open('/tmp/prepro3.h', 'w') as fh:
+            fh.write(parsed2)
+
+    return parsed2, tmp_hdr
+
+
+def get_main_header():
+    # root header file to process - including all components for the module
     tpl = '''
 #include <rand.h>
 #include <hasher.h>
@@ -273,26 +323,70 @@ def main_cffi():
 #include <base32.h>
 #include <base58.h>
 #include <monero/monero.h>
-    '''
+            '''
+    return tpl
 
 
-    tmp_hdr = tempfile.NamedTemporaryFile(delete=False)
-    with tmp_hdr:
-        tmp_hdr.write(tpl.encode('utf8'))
+def get_basedir():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
 
-    HEADERS = [tmp_hdr.name]
-    parsed = preprocess(HEADERS)
-    parsed2 = filter_headers(parsed, base_dir)
 
-    with open('/tmp/prepro.h', 'wb') as fh:
-        fh.write(parsed)
-    with open('/tmp/prepro2.h', 'wb') as fh:
-        fh.write(parsed2)
+def load_h_cffi(base_dir=None, tpl=None, refresh=False, cffi_h=None, debug=False, **kwargs):
+    if tpl is None:
+        tpl = get_main_header()
+    if base_dir is None:
+        base_dir = get_basedir()
 
-    parsed2 = remove_defs(parsed, base_dir, ['ge25519_scalarmult_base_choose_niels', 'ge25519_scalarmult_base_niels'])
-    with open('/tmp/prepro3.h', 'w') as fh:
-        fh.write(parsed2)
+    tmp_hdr = None
+    cffi_hdat = None
+    if cffi_h is None:
+        try:
+            cffi_h = pkg_resources.resource_filename(__name__, os.path.join('..', 'data', 'cffi.h'))
+        except:
+            cffi_h = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'cffi.h'))
 
+    if os.path.exists(cffi_h) and not refresh:
+        logger.debug('Using existing CFFI header file')
+        with open(cffi_h) as fh:
+            cffi_hdat = fh.read().strip()
+
+    if not cffi_hdat or len(cffi_hdat) == 0:
+        logger.info('CFFI header file not found, generating from sources')
+        cffi_hdat, tmp_hdr = generate_cffi_header(base_dir, tpl, debug)
+        logger.info('CFFI generated: %s' % tmp_hdr.name)
+
+        try:
+            with open(cffi_h, 'w+') as fh:
+                fh.write(cffi_hdat)
+        except Exception as e:
+            logger.warning(e)
+
+        if debug:
+            with open('/tmp/prepro3.h', 'w') as fh:
+                fh.write(cffi_hdat)
+
+    if not debug and tmp_hdr:
+        os.unlink(tmp_hdr.name)
+
+    return cffi_hdat, (tmp_hdr.name if tmp_hdr else None), cffi_h
+
+
+def main_cffi():
+    debug = int(os.getenv('TCRY_CFFI_DEBUG', 0))
+    sodium_flags = libsodium_flags()
+
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
+
+    c_files = glob.glob(os.path.join(base_dir, "*.c")) \
+              + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.c")) \
+              + glob.glob(os.path.join(os.path.join(base_dir, 'ed25519-donna'), "*.c"))\
+              + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.c"))
+
+    c_files = remove_files(c_files, ['rfc6979.c'])
+
+    # root header file to process - including all components for the module
+    tpl = get_main_header()
+    cffi_hdat, tmp_hdr = load_h_cffi(base_dir=base_dir, tpl=tpl, debug=debug)[:2]
 
     # set_source is where you specify all the include statements necessary
     # for your code to work and also where you specify additional code you
@@ -305,7 +399,7 @@ def main_cffi():
         'trezor_crypto.tcry_cffi',
         tpl,
         include_dirs=['src/'],
-        sources=CPPS,
+        sources=c_files,
         extra_compile_args=['--std=c99',
                             '-fPIC',
                             '-DUSE_MONERO=1',
@@ -318,12 +412,29 @@ def main_cffi():
                             ] + sodium_flags[0],
         extra_link_args=[] + sodium_flags[1])
 
-
     # https://cffi.readthedocs.org/en/latest/cdef.html#ffi-cdef-declaring-types-and-functions
-    ffi.cdef(parsed2)
+    ffi.cdef(cffi_hdat)
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Trezor-crypto python binding')
+    parser.add_argument('-a', '--action', action='store', choices=['cffi_h', 'ctypes'],
+                        help='Actions')
+
+    parser.add_argument('--debug', dest='debug', default=False, action='store_const', const=True,
+                        help='Debug')
+
+    args = parser.parse_args()
+    if args.action == 'cffi_h':
+        _, tmp, cffi_h = load_h_cffi(refresh=True, debug=args.debug)
+        print('CFFI header regenerated: %s, source: %s' % (cffi_h, tmp))
+    elif args.action == 'ctypes':
+        pass
 
 
 if __name__ == "__cffi__":
     main_cffi()
 
+elif __name__ == '__main__':
+    main()
 
