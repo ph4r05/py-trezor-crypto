@@ -3,7 +3,6 @@ import os
 import subprocess
 import errno
 import glob
-from Cython.Build import cythonize
 from setuptools import setup, find_packages, Extension
 from setuptools.command.test import test as TestCommand
 from distutils.command.build_ext import build_ext
@@ -141,7 +140,7 @@ setup(
     tests_require=['pytest >= 2.7.3'],
     cmdclass={
         'test': PyTest,
-        #'build_ext': BuildCtypeExt,
+        # 'build_ext': BuildCtypeExt,
     })
 
 
