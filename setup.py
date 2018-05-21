@@ -136,7 +136,7 @@ setup(
     ext_modules=extensions,
     setup_requires=['cffi >= 1.1'],
     cffi_modules=['trezor_crypto/cffi_build.py:ffi'],
-    install_requires=['cffi >= 1.1', 'cython >= 0.23', 'shlib', 'ctypeslib2'],
+    install_requires=['cffi >= 1.1', 'cython >= 0.23', 'shlib', 'ctypeslib2', 'pycparser'],
     tests_require=['pytest >= 2.7.3'],
     cmdclass={
         'test': PyTest,
