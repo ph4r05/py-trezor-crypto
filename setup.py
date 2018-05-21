@@ -97,7 +97,8 @@ def libsodium_flags():
     return cflags, ldflags
 
 
-base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'src'))
+setup_dir = os.path.abspath(os.path.dirname(__file__))
+base_dir = os.path.join(os.path.dirname(__file__), 'src')
 CPPS = glob.glob(os.path.join(base_dir, "*.c")) \
           + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.c")) \
           + glob.glob(os.path.join(os.path.join(base_dir, 'ed25519-donna'), "*.c"))\
@@ -130,12 +131,12 @@ extensions = [
 
 setup(
     name='trezor_crypto',
-    version='0.0.1',
+    version='0.0.2',
     packages=find_packages(),
     # ext_modules=cythonize(extensions),
     ext_modules=extensions,
     setup_requires=['cffi >= 1.1'],
-    cffi_modules=['trezor_crypto/cffi_build.py:ffi'],
+    cffi_modules=[os.path.join(setup_dir, 'trezor_crypto', 'cffi_build.py') + ':ffi'],
     install_requires=['cffi >= 1.1', 'cython >= 0.23', 'shlib', 'ctypeslib2', 'pycparser'],
     tests_require=['pytest >= 2.7.3'],
     cmdclass={
