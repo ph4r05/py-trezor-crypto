@@ -10,6 +10,7 @@ import tempfile
 import argparse
 import pkg_resources
 import logging
+import importlib
 from pycparser import c_parser, c_ast, c_generator
 
 
@@ -83,6 +84,10 @@ def get_cffi_h_fname():
     except:
         cffi_h = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'cffi.h'))
     return cffi_h
+
+
+def get_ctypes_types_fname():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_ctypes_gen.py'))
 
 
 def only_files(headers, allowed):
@@ -438,58 +443,65 @@ def main_cffi():
     ffi.cdef(cffi_hdat)
 
 
-def is_const(ast):
-    pass
+class AstToCtype(object):
+    def __init__(self, defined_types):
+        self.defined_types = set(defined_types)
 
+    def ast_to_ctype(self, ast):
+        """
+        Translates AST type to the ctype
+        :param ast:
+        :return:
+        """
+        if isinstance(ast, c_ast.Decl):
+            return self.ast_to_ctype(ast.type)
+        if isinstance(ast, c_ast.Typename):
+            return self.ast_to_ctype(ast.type)
 
-def ast_to_ctype(ast):
-    """
-    Translates AST type to the ctype
-    :param ast:
-    :return:
-    """
-    CUST_TYPES = ['ge25519', 'ge25519_niels', 'ge25519_pniels', 'ge25519_p1p1', 'bignum256modm', 'bignum25519',
-                  'SHA1_CTX', 'SHA3_CTX', 'SHA512_CTX', 'SHA256_CTX', 'xmr_boro_sig_t']
-    if isinstance(ast, c_ast.Decl):
-        return ast_to_ctype(ast.type)
-    if isinstance(ast, c_ast.Typename):
-        return ast_to_ctype(ast.type)
+        is_ptr = isinstance(ast, c_ast.PtrDecl)
+        is_arr = isinstance(ast, c_ast.ArrayDecl)
+        if is_arr:
+            r = self.ast_to_ctype(ast.type)
+            return '%s * %s' % (r[0], eval_ast(ast.dim)), 1, r[2], r[3]
 
-    is_ptr = isinstance(ast, c_ast.PtrDecl)
-    is_arr = isinstance(ast, c_ast.ArrayDecl)
-    if is_arr:
-        r = ast_to_ctype(ast.type)
-        return '%s * %s' % (r[0], eval_ast(ast.dim)), 1, r[2], r[3]
+        if is_ptr:
+            r = self.ast_to_ctype(ast.type)
+            if r[0] is None:
+                return 'ctypes.c_void_p', 1, r[2], r[3]
+            return 'POINTER(%s)' % r[0], 1, r[2], r[3]
 
-    if is_ptr:
-        r = ast_to_ctype(ast.type)
-        if r[0] is None:
-            return 'ctypes.c_void_p', 1, r[2], r[3]
-        return 'POINTER(%s)' % r[0], 1, r[2], r[3]
+        if not isinstance(ast, c_ast.TypeDecl):
+            raise ValueError('Ctype conversion error: %s' % ast)
 
-    if not isinstance(ast, c_ast.TypeDecl):
-        raise ValueError('Ctype conversion error: %s' % ast)
+        tt = ast.type
+        if not isinstance(tt, c_ast.IdentifierType):
+            raise ValueError('Ctype conversion error2: %s' % tt)
 
-    tt = ast.type
-    if not isinstance(tt, c_ast.IdentifierType):
-        raise ValueError('Ctype conversion error2: %s' % tt)
-
-    is_const = 'const' in ast.quals
-    if tt.names == ['unsigned', 'char']:
-        return 'ctypes.c_ubyte', 0, is_const, ast.declname
-    elif len(tt.names) == 1 and (tt.names[0] in CUST_TYPES or tt.names[0].endswith('CTX')):
-        return 'tt.%s' % tt.names[0], 0, is_const, ast.declname
-    elif tt.names == ['void']:
-        return None, 0, is_const, ast.declname
-    else:
-        return ('ctypes.c_%s' % tt.names[0]), 0, is_const, ast.declname
-        # raise ValueError('Unknown vale: %s' % tt.names)
+        is_const = 'const' in ast.quals
+        if tt.names == ['unsigned', 'char']:
+            return 'ctypes.c_ubyte', 0, is_const, ast.declname
+        elif len(tt.names) == 1 and (tt.names[0] in self.defined_types or tt.names[0].endswith('CTX')):
+            return 'tt.%s' % tt.names[0], 0, is_const, ast.declname
+        elif tt.names == ['void']:
+            return None, 0, is_const, ast.declname
+        else:
+            return ('ctypes.c_%s' % tt.names[0]), 0, is_const, ast.declname
+            # raise ValueError('Unknown vale: %s' % tt.names)
 
 
 def ctypes_functions():
     base_dir = get_basedir()
     blacklist = get_blacklisted_funcs()
     parser = c_parser.CParser()
+
+    # Load generated types map
+    types_fname = get_ctypes_types_fname()
+    _path_backup = sys.path
+    sys.path.insert(0, os.path.dirname(types_fname))
+    types_mod_name = os.path.splitext(os.path.basename(types_fname))[0]
+    types_mod = __import__(types_mod_name)
+    sys.path = _path_backup
+    defined_types = types_mod.__all__
 
     tmp_hdr = tempfile.NamedTemporaryFile(prefix='tcry_ctypes_', suffix='.h', delete=False)
     with tmp_hdr:
@@ -506,6 +518,7 @@ def ctypes_functions():
         def __init__(self):
             self.defs = []
             self.ar = ArrayEval()
+            self.ctyper = AstToCtype(defined_types)
 
         def visit_Decl(self, node):
             if not take_coord(node.coord) or node.name in blacklist: return
@@ -516,11 +529,11 @@ def ctypes_functions():
             # print(type(node), node.name, node.quals, node.type, node.storage, node.funcspec)
             args = []
             for n in node.type.args.params:
-                args.append(ast_to_ctype(n))
+                args.append(self.ctyper.ast_to_ctype(n))
             # print(args)
 
             arg_list = ', '.join([x[0] for x in args if x and x[0]])
-            ret_type = ast_to_ctype(node.type.type)
+            ret_type = self.ctyper.ast_to_ctype(node.type.type)
             print('CLIB.%s.argtypes = [%s]' % (node.name, arg_list))
             if ret_type and ret_type[0]:
                 print('CLIB.%s.restype = %s' % (node.name, ret_type[0]))
@@ -532,7 +545,6 @@ def ctypes_functions():
 
     # quick hack for sizeof
     to_parse = replace_sizeofs(to_parse)
-
     ast = parser.parse(to_parse, debuglevel=0)
 
     v = FuncDefVisitor()
@@ -556,7 +568,7 @@ def ctypes_gen(includes=None, use_fake_libs=False, debug=False):
     if includes is None:
         includes = []
 
-    types_fname = os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_ctypes_gen.py'))
+    types_fname = get_ctypes_types_fname()
     func_fname = os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_cfunc_gen.py'))
 
     clang_args = get_compile_args() + [
