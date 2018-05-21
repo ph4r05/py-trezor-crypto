@@ -47,6 +47,13 @@ def get_blacklisted_funcs():
     ]
 
 
+def get_functions_out_params():
+    return {
+        'xmr_hasher_update': [],
+        'xmr_hasher_final': [1],
+    }
+
+
 def get_main_header():
     # root header file to process - including all components for the module
     tpl = '''
@@ -493,13 +500,14 @@ class AstToCtype(object):
         is_arr = isinstance(ast, c_ast.ArrayDecl)
         if is_arr:
             r = self.ast_to_ctype(ast.type)
-            return '%s * %s' % (r[0], eval_ast(ast.dim)), 1, r[2], r[3]
+            tp = '%s * %s' % (r[0], eval_ast(ast.dim))
+            return tp, 2, r[2], r[3], tp
 
         if is_ptr:
             r = self.ast_to_ctype(ast.type)
             if r[0] is None:
-                return 'ctypes.c_void_p', 1, r[2], r[3]
-            return 'POINTER(%s)' % r[0], 1, r[2], r[3]
+                return 'ct.c_void_p', 1, r[2], r[3], None
+            return 'tt.POINTER(%s)' % r[0], 1, r[2], r[3], r[0]
 
         if not isinstance(ast, c_ast.TypeDecl):
             raise ValueError('Ctype conversion error: %s' % ast)
@@ -510,17 +518,17 @@ class AstToCtype(object):
 
         is_const = 'const' in ast.quals
         if tt.names == ['unsigned', 'char']:
-            return 'ctypes.c_ubyte', 0, is_const, ast.declname
+            return 'ct.c_ubyte', 0, is_const, ast.declname
         elif len(tt.names) == 1 and (tt.names[0] in self.defined_types or tt.names[0].endswith('CTX')):
             return 'tt.%s' % tt.names[0], 0, is_const, ast.declname
         elif tt.names == ['void']:
-            return None, 0, is_const, ast.declname
+            return None, 0, is_const, ast.declname, None
         else:
-            return ('ctypes.c_%s' % tt.names[0]), 0, is_const, ast.declname
+            return ('ct.c_%s' % tt.names[0]), 0, is_const, ast.declname
             # raise ValueError('Unknown vale: %s' % tt.names)
 
 
-def get_output_args(ast, args, consts, ret_type):
+def get_output_args(ast, args, consts, ret_type, lut):
     """
     Determines indices of output arguments
     :param ast:
@@ -528,6 +536,10 @@ def get_output_args(ast, args, consts, ret_type):
     :param consts:
     :return:
     """
+    if lut and ast.name in lut:
+        logger.debug('Using lut out params for %s' % ast.name)
+        return lut[ast.name]
+
     if len(args) == 0:
         return []
 
@@ -551,10 +563,27 @@ def get_output_args(ast, args, consts, ret_type):
         return []
 
 
+def arg_call_form(arg, name):
+    if arg[1]:
+        return 'ct.byref(%s)' % name
+    else:
+        return name
+
+
+def arg_call_list(args, arg_str):
+    res = []
+    for idx, c in enumerate(args):
+        if c is None or c[0] is None:
+            continue
+        res.append(arg_call_form(c, arg_str[idx]))
+    return res
+
+
 def ctypes_functions():
     base_dir = get_basedir()
     blacklist = get_blacklisted_funcs()
     parser = c_parser.CParser()
+    out_params_out = get_functions_out_params()
 
     # Load generated types map
     types_fname = get_ctypes_types_fname()
@@ -587,30 +616,58 @@ def ctypes_functions():
             if not isinstance(node.type, c_ast.FuncDecl): return
             if 'static' in node.storage: return
 
-            node.show()
+            # node.show()
             print(type(node), node.name, node.quals, node.type, node.storage, node.funcspec)
+            n_args = len(node.type.args.params)
             args = []
             consts = []
             for n in node.type.args.params:
                 arg = self.ctyper.ast_to_ctype(n)
+                if arg[0] is None and n_args == 1:
+                    break
                 args.append(arg)
                 consts.append(self.ctyper.is_byval(n) or arg[2])
             ret_type = self.ctyper.ast_to_ctype(node.type.type)
+            ret_nonvoid = ret_type and ret_type[0]
 
             # Is the first arg non-const with name r? Output argument
             # Is the first N non-const followed by at least const / trivial?
-            print(args)
-            print(consts)
-            out_args = get_output_args(node, args, consts, ret_type)
-            print(out_args)
+            # print(args)
+            # print(consts)
+            out_args = get_output_args(node, args, consts, ret_type, lut=out_params_out)
+            # print(out_args)
 
             arg_list = ', '.join([x[0] for x in args if x and x[0]])
             print('CLIB.%s.argtypes = [%s]' % (node.name, arg_list))
-            if ret_type and ret_type[0]:
+            if ret_nonvoid:
                 print('CLIB.%s.restype = %s' % (node.name, ret_type[0]))
 
-            self.ar.visit(node)
-            self.defs.append(node)
+            arg_names = ['r', 'a', 'b', 'c', 'd', 'e', 'f', 'h']
+            arg_str = [(x[3] if x[3] else arg_names[idx]) for idx, x in enumerate(args) if x[0]] if args else []
+            arg_par = arg_call_list(args, arg_str)
+
+            tpl = 'def %s(%s): \n' % (node.name, ', '.join(arg_str))
+            tpl += '    return CLIB.%s(%s)\n' % (node.name, ', '.join(arg_par))
+            tpl += '\n'
+            print(tpl)
+
+            if len(out_args) == 0:
+                return
+
+            arg_str_n = [(x[3] if x[3] else arg_names[idx]) for idx, x in enumerate(args) if x[0] and idx not in out_args] if args else []
+            arg_ret = [(x[3] if x[3] else arg_names[idx]) for idx, x in enumerate(args) if x[0] and idx in out_args] if args else []
+            ret_list = (['_res'] if ret_nonvoid else []) + arg_ret
+
+            tpl = 'def %s_r(%s): \n' % (node.name, ', '.join(arg_str_n))
+            for idx in out_args:
+                tpl += '    %s = (%s)()\n' % (arg_str[idx], args[idx][4] if len(args[idx]) > 4 else args[idx][0])
+            tpl += '    %sCLIB.%s(%s)\n' % ('_res = ' if ret_nonvoid else '', node.name, ', '.join(arg_par))
+            tpl += '    return %s\n' % (', '.join(ret_list))
+            tpl += '\n'
+            print(tpl)
+
+            # self.ar.visit(node)
+            # self.defs.append(node)
 
     # quick hack for sizeof
     to_parse = replace_sizeofs(to_parse)
