@@ -11,6 +11,7 @@ import argparse
 import pkg_resources
 import logging
 import importlib
+import itertools
 from pycparser import c_parser, c_ast, c_generator
 
 
@@ -446,6 +447,36 @@ def main_cffi():
 class AstToCtype(object):
     def __init__(self, defined_types):
         self.defined_types = set(defined_types)
+        self.int_types = [
+            'uint16_t', 'uint32_t', 'uint64_t',
+            'int16_t', 'int32_t', 'int64_t',
+            'int', 'long', 'size_t', 'ssize_t',
+            'char', 'bool', 'boolean',
+        ]
+
+    def is_byval(self, ast):
+        """
+        Passed by value / cannot modify
+        :return:
+        """
+        if isinstance(ast, c_ast.Decl):
+            return self.is_byval(ast.type)
+        if isinstance(ast, c_ast.Typename):
+            return self.is_byval(ast.type)
+        if isinstance(ast, (c_ast.PtrDecl, c_ast.ArrayDecl)):
+            return False
+        if not isinstance(ast, c_ast.TypeDecl):
+            raise ValueError('Ctype conversion error: %s' % ast)
+
+        tt = ast.type
+        if not isinstance(tt, c_ast.IdentifierType):
+            raise ValueError('Ctype conversion error2: %s' % tt)
+
+        ty = tt.names[0]
+        if len(tt.names) == 2 and tt.names[0] == 'unsigned':
+            ty = tt.names[1]
+
+        return ty in self.int_types
 
     def ast_to_ctype(self, ast):
         """
@@ -489,6 +520,37 @@ class AstToCtype(object):
             # raise ValueError('Unknown vale: %s' % tt.names)
 
 
+def get_output_args(ast, args, consts, ret_type):
+    """
+    Determines indices of output arguments
+    :param ast:
+    :param args:
+    :param consts:
+    :return:
+    """
+    if len(args) == 0:
+        return []
+
+    first_grp = None
+    last_grp = None
+    num_grp = 0
+    for idx, (k, g) in enumerate(itertools.groupby(enumerate(consts), key=lambda y: y[1])):
+        first_grp = (k, list(g)) if first_grp is None else first_grp
+        last_grp = (k, list(g))
+        num_grp += 1
+
+    if num_grp > 2 and first_grp[0] == last_grp[0]:
+        logger.warning('Problem with output guess for %s' % ast.name)
+    if first_grp[0] and last_grp[0]:
+        return []
+    if not first_grp[0]:
+        return [x[0] for x in first_grp[1]]
+    elif not last_grp[0]:
+        return [x[0] for x in last_grp[1]]
+    else:
+        return []
+
+
 def ctypes_functions():
     base_dir = get_basedir()
     blacklist = get_blacklisted_funcs()
@@ -525,20 +587,27 @@ def ctypes_functions():
             if not isinstance(node.type, c_ast.FuncDecl): return
             if 'static' in node.storage: return
 
-            # node.show()
-            # print(type(node), node.name, node.quals, node.type, node.storage, node.funcspec)
+            node.show()
+            print(type(node), node.name, node.quals, node.type, node.storage, node.funcspec)
             args = []
+            consts = []
             for n in node.type.args.params:
-                args.append(self.ctyper.ast_to_ctype(n))
-            # print(args)
+                arg = self.ctyper.ast_to_ctype(n)
+                args.append(arg)
+                consts.append(self.ctyper.is_byval(n) or arg[2])
+            ret_type = self.ctyper.ast_to_ctype(node.type.type)
+
+            # Is the first arg non-const with name r? Output argument
+            # Is the first N non-const followed by at least const / trivial?
+            print(args)
+            print(consts)
+            out_args = get_output_args(node, args, consts, ret_type)
+            print(out_args)
 
             arg_list = ', '.join([x[0] for x in args if x and x[0]])
-            ret_type = self.ctyper.ast_to_ctype(node.type.type)
             print('CLIB.%s.argtypes = [%s]' % (node.name, arg_list))
             if ret_type and ret_type[0]:
                 print('CLIB.%s.restype = %s' % (node.name, ret_type[0]))
-
-
 
             self.ar.visit(node)
             self.defs.append(node)
