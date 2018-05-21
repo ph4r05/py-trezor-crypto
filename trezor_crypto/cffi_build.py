@@ -556,8 +556,8 @@ def ctypes_gen(includes=None, use_fake_libs=False, debug=False):
     if includes is None:
         includes = []
 
-    types_fname = os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_ctypes.py'))
-    func_fname = os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_cfunc.py'))
+    types_fname = os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_ctypes_gen.py'))
+    func_fname = os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_cfunc_gen.py'))
 
     clang_args = get_compile_args() + [
         '-Isrc/'
@@ -570,14 +570,8 @@ def ctypes_gen(includes=None, use_fake_libs=False, debug=False):
     # detect default includes: gcc -xc -E -v /dev/null
 
     base_dir = 'src'
-    # ['src/hasher.h',
-    #            'src/rand.h',
-    #            'src/sha2.h',
-    #            'src/sha3.h',
-    #            'src/ed25519-donna/ed25519-donna.h',
-    #            ]\
-
     h_files = glob.glob(os.path.join(base_dir, "*.h")) \
+               + ['src/ed25519-donna/ed25519-donna.h', ] \
                + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.h")) \
                + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.h"))
 
