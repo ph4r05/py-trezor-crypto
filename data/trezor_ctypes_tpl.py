@@ -12,11 +12,12 @@ from trezor_crypto import mod_base
 CLIB = None
 
 
-def open_lib(lib_path=None, try_env=False):
+def open_lib(lib_path=None, try_env=False, no_init=False):
     """
     Opens the library
     :param lib_path:
     :param try_env:
+    :param no_init:
     :return:
     """
     global CLIB
@@ -43,6 +44,10 @@ def open_lib(lib_path=None, try_env=False):
         raise FileNotFoundError('Trezor-Crypto lib not found')
 
     CLIB = ct.cdll.LoadLibrary(ext_fpath)
+    if not no_init:
+        setup_lib(CLIB)
+        init_lib(CLIB)
+
     return CLIB
 
 
@@ -52,6 +57,17 @@ def cl():
     :return:
     """
     return CLIB
+
+
+def init_lib():
+    """
+    Initializes Trezor crypto library
+    :return:
+    """
+    res = cl().random_init()
+    if res < 0:
+        raise ValueError('Library initialization error: %s' % res)
+    return res
 
 
 def setup_lib(CLIB):
