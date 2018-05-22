@@ -360,12 +360,12 @@ def random32():
 
 
 def random_buffer(buf, len): 
-    CLIB.random_buffer(ct.byref(buf), len)
+    CLIB.random_buffer(buf, len)
 
 
 def random_buffer_r(len): 
     buf = (tt.uint8_t)()
-    CLIB.random_buffer(ct.byref(buf), len)
+    CLIB.random_buffer(buf, len)
     return bytes(buf)
 
 
@@ -374,12 +374,12 @@ def random_uniform(n):
 
 
 def random_permute(buf, len): 
-    CLIB.random_permute(ct.byref(buf), len)
+    CLIB.random_permute(buf, len)
 
 
 def random_permute_r(len): 
     buf = (ct.c_byte)()
-    CLIB.random_permute(ct.byref(buf), len)
+    CLIB.random_permute(buf, len)
     return bytes(buf)
 
 
@@ -408,54 +408,54 @@ def sha1_Init_r():
 
 
 def sha1_Update(r, a, b): 
-    CLIB.sha1_Update(ct.byref(r), ct.byref(a), b)
+    CLIB.sha1_Update(ct.byref(r), a, b)
 
 
 def sha1_Update_r(a, b): 
     r = (tt.SHA1_CTX)()
-    CLIB.sha1_Update(ct.byref(r), ct.byref(a), b)
+    CLIB.sha1_Update(ct.byref(r), a, b)
     return r
 
 
 def sha1_Final(r, a): 
-    CLIB.sha1_Final(ct.byref(r), ct.byref(a))
+    CLIB.sha1_Final(ct.byref(r), a)
 
 
 def sha1_Final_r(): 
     r = (tt.SHA1_CTX)()
     a = (tt.uint8_t * 20)()
-    CLIB.sha1_Final(ct.byref(r), ct.byref(a))
+    CLIB.sha1_Final(ct.byref(r), a)
     return r, bytes(a)
 
 
 def sha1_End(r, a): 
-    return bytes(CLIB.sha1_End(ct.byref(r), ct.byref(a)))
+    return bytes(CLIB.sha1_End(ct.byref(r), a))
 
 
 def sha1_End_r(): 
     r = (tt.SHA1_CTX)()
     a = (ct.c_byte * 41)()
-    _res = CLIB.sha1_End(ct.byref(r), ct.byref(a))
+    _res = CLIB.sha1_End(ct.byref(r), a)
     return bytes(_res), r, bytes(a)
 
 
 def sha1_Raw(r, a, b): 
-    CLIB.sha1_Raw(ct.byref(r), a, ct.byref(b))
+    CLIB.sha1_Raw(r, a, b)
 
 
 def sha1_Raw_r(r, a): 
     b = (tt.uint8_t * 20)()
-    CLIB.sha1_Raw(ct.byref(r), a, ct.byref(b))
+    CLIB.sha1_Raw(r, a, b)
     return bytes(b)
 
 
 def sha1_Data(r, a, b): 
-    return bytes(CLIB.sha1_Data(ct.byref(r), a, ct.byref(b)))
+    return bytes(CLIB.sha1_Data(r, a, b))
 
 
 def sha1_Data_r(r, a): 
     b = (ct.c_byte * 41)()
-    _res = CLIB.sha1_Data(ct.byref(r), a, ct.byref(b))
+    _res = CLIB.sha1_Data(r, a, b)
     return bytes(_res), bytes(b)
 
 
@@ -480,54 +480,54 @@ def sha256_Init_r():
 
 
 def sha256_Update(r, a, b): 
-    CLIB.sha256_Update(ct.byref(r), ct.byref(a), b)
+    CLIB.sha256_Update(ct.byref(r), a, b)
 
 
 def sha256_Update_r(a, b): 
     r = (tt.SHA256_CTX)()
-    CLIB.sha256_Update(ct.byref(r), ct.byref(a), b)
+    CLIB.sha256_Update(ct.byref(r), a, b)
     return r
 
 
 def sha256_Final(r, a): 
-    CLIB.sha256_Final(ct.byref(r), ct.byref(a))
+    CLIB.sha256_Final(ct.byref(r), a)
 
 
 def sha256_Final_r(): 
     r = (tt.SHA256_CTX)()
     a = (tt.uint8_t * 32)()
-    CLIB.sha256_Final(ct.byref(r), ct.byref(a))
+    CLIB.sha256_Final(ct.byref(r), a)
     return r, bytes(a)
 
 
 def sha256_End(r, a): 
-    return bytes(CLIB.sha256_End(ct.byref(r), ct.byref(a)))
+    return bytes(CLIB.sha256_End(ct.byref(r), a))
 
 
 def sha256_End_r(): 
     r = (tt.SHA256_CTX)()
     a = (ct.c_byte * 65)()
-    _res = CLIB.sha256_End(ct.byref(r), ct.byref(a))
+    _res = CLIB.sha256_End(ct.byref(r), a)
     return bytes(_res), r, bytes(a)
 
 
 def sha256_Raw(r, a, b): 
-    CLIB.sha256_Raw(ct.byref(r), a, ct.byref(b))
+    CLIB.sha256_Raw(r, a, b)
 
 
 def sha256_Raw_r(r, a): 
     b = (tt.uint8_t * 32)()
-    CLIB.sha256_Raw(ct.byref(r), a, ct.byref(b))
+    CLIB.sha256_Raw(r, a, b)
     return bytes(b)
 
 
 def sha256_Data(r, a, b): 
-    return bytes(CLIB.sha256_Data(ct.byref(r), a, ct.byref(b)))
+    return bytes(CLIB.sha256_Data(r, a, b))
 
 
 def sha256_Data_r(r, a): 
     b = (ct.c_byte * 65)()
-    _res = CLIB.sha256_Data(ct.byref(r), a, ct.byref(b))
+    _res = CLIB.sha256_Data(r, a, b)
     return bytes(_res), bytes(b)
 
 
@@ -552,54 +552,54 @@ def sha512_Init_r():
 
 
 def sha512_Update(r, a, b): 
-    CLIB.sha512_Update(ct.byref(r), ct.byref(a), b)
+    CLIB.sha512_Update(ct.byref(r), a, b)
 
 
 def sha512_Update_r(a, b): 
     r = (tt.SHA512_CTX)()
-    CLIB.sha512_Update(ct.byref(r), ct.byref(a), b)
+    CLIB.sha512_Update(ct.byref(r), a, b)
     return r
 
 
 def sha512_Final(r, a): 
-    CLIB.sha512_Final(ct.byref(r), ct.byref(a))
+    CLIB.sha512_Final(ct.byref(r), a)
 
 
 def sha512_Final_r(): 
     r = (tt.SHA512_CTX)()
     a = (tt.uint8_t * 64)()
-    CLIB.sha512_Final(ct.byref(r), ct.byref(a))
+    CLIB.sha512_Final(ct.byref(r), a)
     return r, bytes(a)
 
 
 def sha512_End(r, a): 
-    return bytes(CLIB.sha512_End(ct.byref(r), ct.byref(a)))
+    return bytes(CLIB.sha512_End(ct.byref(r), a))
 
 
 def sha512_End_r(): 
     r = (tt.SHA512_CTX)()
     a = (ct.c_byte * 129)()
-    _res = CLIB.sha512_End(ct.byref(r), ct.byref(a))
+    _res = CLIB.sha512_End(ct.byref(r), a)
     return bytes(_res), r, bytes(a)
 
 
 def sha512_Raw(r, a, b): 
-    CLIB.sha512_Raw(ct.byref(r), a, ct.byref(b))
+    CLIB.sha512_Raw(r, a, b)
 
 
 def sha512_Raw_r(r, a): 
     b = (tt.uint8_t * 64)()
-    CLIB.sha512_Raw(ct.byref(r), a, ct.byref(b))
+    CLIB.sha512_Raw(r, a, b)
     return bytes(b)
 
 
 def sha512_Data(r, a, b): 
-    return bytes(CLIB.sha512_Data(ct.byref(r), a, ct.byref(b)))
+    return bytes(CLIB.sha512_Data(r, a, b))
 
 
 def sha512_Data_r(r, a): 
     b = (ct.c_byte * 129)()
-    _res = CLIB.sha512_Data(ct.byref(r), a, ct.byref(b))
+    _res = CLIB.sha512_Data(r, a, b)
     return bytes(_res), bytes(b)
 
 
@@ -644,74 +644,74 @@ def sha3_512_Init_r():
 
 
 def sha3_Update(ctx, msg, size): 
-    CLIB.sha3_Update(ct.byref(ctx), ct.byref(msg), size)
+    CLIB.sha3_Update(ct.byref(ctx), msg, size)
 
 
 def sha3_Update_r(msg, size): 
     ctx = (tt.SHA3_CTX)()
-    CLIB.sha3_Update(ct.byref(ctx), ct.byref(msg), size)
+    CLIB.sha3_Update(ct.byref(ctx), msg, size)
     return ctx
 
 
 def sha3_Final(ctx, result): 
-    CLIB.sha3_Final(ct.byref(ctx), ct.byref(result))
+    CLIB.sha3_Final(ct.byref(ctx), result)
 
 
 def sha3_Final_r(): 
     ctx = (tt.SHA3_CTX)()
     result = (ct.c_ubyte)()
-    CLIB.sha3_Final(ct.byref(ctx), ct.byref(result))
+    CLIB.sha3_Final(ct.byref(ctx), result)
     return ctx, bytes(result)
 
 
 def keccak_Final(ctx, result): 
-    CLIB.keccak_Final(ct.byref(ctx), ct.byref(result))
+    CLIB.keccak_Final(ct.byref(ctx), result)
 
 
 def keccak_Final_r(): 
     ctx = (tt.SHA3_CTX)()
     result = (ct.c_ubyte)()
-    CLIB.keccak_Final(ct.byref(ctx), ct.byref(result))
+    CLIB.keccak_Final(ct.byref(ctx), result)
     return ctx, bytes(result)
 
 
 def keccak_256(data, len, digest): 
-    CLIB.keccak_256(ct.byref(data), len, ct.byref(digest))
+    CLIB.keccak_256(data, len, digest)
 
 
 def keccak_256_r(data, len): 
     digest = (ct.c_ubyte)()
-    CLIB.keccak_256(ct.byref(data), len, ct.byref(digest))
+    CLIB.keccak_256(data, len, digest)
     return bytes(digest)
 
 
 def keccak_512(data, len, digest): 
-    CLIB.keccak_512(ct.byref(data), len, ct.byref(digest))
+    CLIB.keccak_512(data, len, digest)
 
 
 def keccak_512_r(data, len): 
     digest = (ct.c_ubyte)()
-    CLIB.keccak_512(ct.byref(data), len, ct.byref(digest))
+    CLIB.keccak_512(data, len, digest)
     return bytes(digest)
 
 
 def sha3_256(data, len, digest): 
-    CLIB.sha3_256(ct.byref(data), len, ct.byref(digest))
+    CLIB.sha3_256(data, len, digest)
 
 
 def sha3_256_r(data, len): 
     digest = (ct.c_ubyte)()
-    CLIB.sha3_256(ct.byref(data), len, ct.byref(digest))
+    CLIB.sha3_256(data, len, digest)
     return bytes(digest)
 
 
 def sha3_512(data, len, digest): 
-    CLIB.sha3_512(ct.byref(data), len, ct.byref(digest))
+    CLIB.sha3_512(data, len, digest)
 
 
 def sha3_512_r(data, len): 
     digest = (ct.c_ubyte)()
-    CLIB.sha3_512(ct.byref(data), len, ct.byref(digest))
+    CLIB.sha3_512(data, len, digest)
     return bytes(digest)
 
 
@@ -726,33 +726,33 @@ def blake256_Init_r():
 
 
 def blake256_Update(r, a, b): 
-    CLIB.blake256_Update(ct.byref(r), ct.byref(a), b)
+    CLIB.blake256_Update(ct.byref(r), a, b)
 
 
 def blake256_Update_r(a, b): 
     r = (tt.BLAKE256_CTX)()
-    CLIB.blake256_Update(ct.byref(r), ct.byref(a), b)
+    CLIB.blake256_Update(ct.byref(r), a, b)
     return r
 
 
 def blake256_Final(r, a): 
-    CLIB.blake256_Final(ct.byref(r), ct.byref(a))
+    CLIB.blake256_Final(ct.byref(r), a)
 
 
 def blake256_Final_r(): 
     r = (tt.BLAKE256_CTX)()
     a = (tt.uint8_t)()
-    CLIB.blake256_Final(ct.byref(r), ct.byref(a))
+    CLIB.blake256_Final(ct.byref(r), a)
     return r, bytes(a)
 
 
 def blake256(r, a, b): 
-    CLIB.blake256(ct.byref(r), a, ct.byref(b))
+    CLIB.blake256(r, a, b)
 
 
 def blake256_r(r, a): 
     b = (tt.uint8_t)()
-    CLIB.blake256(ct.byref(r), a, ct.byref(b))
+    CLIB.blake256(r, a, b)
     return bytes(b)
 
 
@@ -820,147 +820,147 @@ def hasher_Reset_r():
 
 
 def hasher_Update(hasher, data, length): 
-    CLIB.hasher_Update(ct.byref(hasher), ct.byref(data), length)
+    CLIB.hasher_Update(ct.byref(hasher), data, length)
 
 
 def hasher_Update_r(data, length): 
     hasher = (tt.Hasher)()
-    CLIB.hasher_Update(ct.byref(hasher), ct.byref(data), length)
+    CLIB.hasher_Update(ct.byref(hasher), data, length)
     return hasher
 
 
 def hasher_Final(hasher, hash): 
-    CLIB.hasher_Final(ct.byref(hasher), ct.byref(hash))
+    CLIB.hasher_Final(ct.byref(hasher), hash)
 
 
 def hasher_Final_r(): 
     hasher = (tt.Hasher)()
     hash = (tt.uint8_t * 32)()
-    CLIB.hasher_Final(ct.byref(hasher), ct.byref(hash))
+    CLIB.hasher_Final(ct.byref(hasher), hash)
     return hasher, bytes(hash)
 
 
 def hasher_Raw(type, data, length, hash): 
-    CLIB.hasher_Raw(type, ct.byref(data), length, ct.byref(hash))
+    CLIB.hasher_Raw(type, data, length, hash)
 
 
 def hasher_Raw_r(data, length, hash): 
     type = (tt.HasherType)()
-    CLIB.hasher_Raw(type, ct.byref(data), length, ct.byref(hash))
+    CLIB.hasher_Raw(type, data, length, hash)
     return type
 
 
 def hmac_sha256_Init(hctx, key, keylen): 
-    CLIB.hmac_sha256_Init(ct.byref(hctx), ct.byref(key), keylen)
+    CLIB.hmac_sha256_Init(ct.byref(hctx), key, keylen)
 
 
 def hmac_sha256_Init_r(key, keylen): 
     hctx = (tt.HMAC_SHA256_CTX)()
-    CLIB.hmac_sha256_Init(ct.byref(hctx), ct.byref(key), keylen)
+    CLIB.hmac_sha256_Init(ct.byref(hctx), key, keylen)
     return hctx
 
 
 def hmac_sha256_Update(hctx, msg, msglen): 
-    CLIB.hmac_sha256_Update(ct.byref(hctx), ct.byref(msg), msglen)
+    CLIB.hmac_sha256_Update(ct.byref(hctx), msg, msglen)
 
 
 def hmac_sha256_Update_r(msg, msglen): 
     hctx = (tt.HMAC_SHA256_CTX)()
-    CLIB.hmac_sha256_Update(ct.byref(hctx), ct.byref(msg), msglen)
+    CLIB.hmac_sha256_Update(ct.byref(hctx), msg, msglen)
     return hctx
 
 
 def hmac_sha256_Final(hctx, hmac): 
-    CLIB.hmac_sha256_Final(ct.byref(hctx), ct.byref(hmac))
+    CLIB.hmac_sha256_Final(ct.byref(hctx), hmac)
 
 
 def hmac_sha256_Final_r(): 
     hctx = (tt.HMAC_SHA256_CTX)()
     hmac = (tt.uint8_t)()
-    CLIB.hmac_sha256_Final(ct.byref(hctx), ct.byref(hmac))
+    CLIB.hmac_sha256_Final(ct.byref(hctx), hmac)
     return hctx, bytes(hmac)
 
 
 def hmac_sha256(key, keylen, msg, msglen, hmac): 
-    CLIB.hmac_sha256(ct.byref(key), keylen, ct.byref(msg), msglen, ct.byref(hmac))
+    CLIB.hmac_sha256(key, keylen, msg, msglen, hmac)
 
 
 def hmac_sha256_r(key, keylen, msg, msglen): 
     hmac = (tt.uint8_t)()
-    CLIB.hmac_sha256(ct.byref(key), keylen, ct.byref(msg), msglen, ct.byref(hmac))
+    CLIB.hmac_sha256(key, keylen, msg, msglen, hmac)
     return bytes(hmac)
 
 
 def hmac_sha256_prepare(key, keylen, opad_digest, ipad_digest): 
-    CLIB.hmac_sha256_prepare(ct.byref(key), keylen, ct.byref(opad_digest), ct.byref(ipad_digest))
+    CLIB.hmac_sha256_prepare(key, keylen, ct.byref(opad_digest), ct.byref(ipad_digest))
 
 
 def hmac_sha256_prepare_r(key, keylen): 
     opad_digest = (tt.uint32_t)()
     ipad_digest = (tt.uint32_t)()
-    CLIB.hmac_sha256_prepare(ct.byref(key), keylen, ct.byref(opad_digest), ct.byref(ipad_digest))
+    CLIB.hmac_sha256_prepare(key, keylen, ct.byref(opad_digest), ct.byref(ipad_digest))
     return bytes(opad_digest), int(ipad_digest)
 
 
 def hmac_sha512_Init(hctx, key, keylen): 
-    CLIB.hmac_sha512_Init(ct.byref(hctx), ct.byref(key), keylen)
+    CLIB.hmac_sha512_Init(ct.byref(hctx), key, keylen)
 
 
 def hmac_sha512_Init_r(key, keylen): 
     hctx = (tt.HMAC_SHA512_CTX)()
-    CLIB.hmac_sha512_Init(ct.byref(hctx), ct.byref(key), keylen)
+    CLIB.hmac_sha512_Init(ct.byref(hctx), key, keylen)
     return hctx
 
 
 def hmac_sha512_Update(hctx, msg, msglen): 
-    CLIB.hmac_sha512_Update(ct.byref(hctx), ct.byref(msg), msglen)
+    CLIB.hmac_sha512_Update(ct.byref(hctx), msg, msglen)
 
 
 def hmac_sha512_Update_r(msg, msglen): 
     hctx = (tt.HMAC_SHA512_CTX)()
-    CLIB.hmac_sha512_Update(ct.byref(hctx), ct.byref(msg), msglen)
+    CLIB.hmac_sha512_Update(ct.byref(hctx), msg, msglen)
     return hctx
 
 
 def hmac_sha512_Final(hctx, hmac): 
-    CLIB.hmac_sha512_Final(ct.byref(hctx), ct.byref(hmac))
+    CLIB.hmac_sha512_Final(ct.byref(hctx), hmac)
 
 
 def hmac_sha512_Final_r(): 
     hctx = (tt.HMAC_SHA512_CTX)()
     hmac = (tt.uint8_t)()
-    CLIB.hmac_sha512_Final(ct.byref(hctx), ct.byref(hmac))
+    CLIB.hmac_sha512_Final(ct.byref(hctx), hmac)
     return hctx, bytes(hmac)
 
 
 def hmac_sha512(key, keylen, msg, msglen, hmac): 
-    CLIB.hmac_sha512(ct.byref(key), keylen, ct.byref(msg), msglen, ct.byref(hmac))
+    CLIB.hmac_sha512(key, keylen, msg, msglen, hmac)
 
 
 def hmac_sha512_r(key, keylen, msg, msglen): 
     hmac = (tt.uint8_t)()
-    CLIB.hmac_sha512(ct.byref(key), keylen, ct.byref(msg), msglen, ct.byref(hmac))
+    CLIB.hmac_sha512(key, keylen, msg, msglen, hmac)
     return bytes(hmac)
 
 
 def hmac_sha512_prepare(key, keylen, opad_digest, ipad_digest): 
-    CLIB.hmac_sha512_prepare(ct.byref(key), keylen, ct.byref(opad_digest), ct.byref(ipad_digest))
+    CLIB.hmac_sha512_prepare(key, keylen, ct.byref(opad_digest), ct.byref(ipad_digest))
 
 
 def hmac_sha512_prepare_r(key, keylen): 
     opad_digest = (tt.uint64_t)()
     ipad_digest = (tt.uint64_t)()
-    CLIB.hmac_sha512_prepare(ct.byref(key), keylen, ct.byref(opad_digest), ct.byref(ipad_digest))
+    CLIB.hmac_sha512_prepare(key, keylen, ct.byref(opad_digest), ct.byref(ipad_digest))
     return bytes(opad_digest), int(ipad_digest)
 
 
 def pbkdf2_hmac_sha256_Init(pctx, pass_, passlen, salt, saltlen): 
-    CLIB.pbkdf2_hmac_sha256_Init(ct.byref(pctx), ct.byref(pass_), passlen, ct.byref(salt), saltlen)
+    CLIB.pbkdf2_hmac_sha256_Init(ct.byref(pctx), pass_, passlen, salt, saltlen)
 
 
 def pbkdf2_hmac_sha256_Init_r(pass_, passlen, salt, saltlen): 
     pctx = (tt.PBKDF2_HMAC_SHA256_CTX)()
-    CLIB.pbkdf2_hmac_sha256_Init(ct.byref(pctx), ct.byref(pass_), passlen, ct.byref(salt), saltlen)
+    CLIB.pbkdf2_hmac_sha256_Init(ct.byref(pctx), pass_, passlen, salt, saltlen)
     return pctx
 
 
@@ -975,33 +975,33 @@ def pbkdf2_hmac_sha256_Update_r(iterations):
 
 
 def pbkdf2_hmac_sha256_Final(pctx, key): 
-    CLIB.pbkdf2_hmac_sha256_Final(ct.byref(pctx), ct.byref(key))
+    CLIB.pbkdf2_hmac_sha256_Final(ct.byref(pctx), key)
 
 
 def pbkdf2_hmac_sha256_Final_r(): 
     pctx = (tt.PBKDF2_HMAC_SHA256_CTX)()
     key = (tt.uint8_t)()
-    CLIB.pbkdf2_hmac_sha256_Final(ct.byref(pctx), ct.byref(key))
+    CLIB.pbkdf2_hmac_sha256_Final(ct.byref(pctx), key)
     return pctx, bytes(key)
 
 
 def pbkdf2_hmac_sha256(pass_, passlen, salt, saltlen, iterations, key): 
-    CLIB.pbkdf2_hmac_sha256(ct.byref(pass_), passlen, ct.byref(salt), saltlen, iterations, ct.byref(key))
+    CLIB.pbkdf2_hmac_sha256(pass_, passlen, salt, saltlen, iterations, key)
 
 
 def pbkdf2_hmac_sha256_r(pass_, passlen, salt, saltlen, iterations): 
     key = (tt.uint8_t)()
-    CLIB.pbkdf2_hmac_sha256(ct.byref(pass_), passlen, ct.byref(salt), saltlen, iterations, ct.byref(key))
+    CLIB.pbkdf2_hmac_sha256(pass_, passlen, salt, saltlen, iterations, key)
     return bytes(key)
 
 
 def pbkdf2_hmac_sha512_Init(pctx, pass_, passlen, salt, saltlen): 
-    CLIB.pbkdf2_hmac_sha512_Init(ct.byref(pctx), ct.byref(pass_), passlen, ct.byref(salt), saltlen)
+    CLIB.pbkdf2_hmac_sha512_Init(ct.byref(pctx), pass_, passlen, salt, saltlen)
 
 
 def pbkdf2_hmac_sha512_Init_r(pass_, passlen, salt, saltlen): 
     pctx = (tt.PBKDF2_HMAC_SHA512_CTX)()
-    CLIB.pbkdf2_hmac_sha512_Init(ct.byref(pctx), ct.byref(pass_), passlen, ct.byref(salt), saltlen)
+    CLIB.pbkdf2_hmac_sha512_Init(ct.byref(pctx), pass_, passlen, salt, saltlen)
     return pctx
 
 
@@ -1016,91 +1016,91 @@ def pbkdf2_hmac_sha512_Update_r(iterations):
 
 
 def pbkdf2_hmac_sha512_Final(pctx, key): 
-    CLIB.pbkdf2_hmac_sha512_Final(ct.byref(pctx), ct.byref(key))
+    CLIB.pbkdf2_hmac_sha512_Final(ct.byref(pctx), key)
 
 
 def pbkdf2_hmac_sha512_Final_r(): 
     pctx = (tt.PBKDF2_HMAC_SHA512_CTX)()
     key = (tt.uint8_t)()
-    CLIB.pbkdf2_hmac_sha512_Final(ct.byref(pctx), ct.byref(key))
+    CLIB.pbkdf2_hmac_sha512_Final(ct.byref(pctx), key)
     return pctx, bytes(key)
 
 
 def pbkdf2_hmac_sha512(pass_, passlen, salt, saltlen, iterations, key): 
-    CLIB.pbkdf2_hmac_sha512(ct.byref(pass_), passlen, ct.byref(salt), saltlen, iterations, ct.byref(key))
+    CLIB.pbkdf2_hmac_sha512(pass_, passlen, salt, saltlen, iterations, key)
 
 
 def pbkdf2_hmac_sha512_r(pass_, passlen, salt, saltlen, iterations): 
     key = (tt.uint8_t)()
-    CLIB.pbkdf2_hmac_sha512(ct.byref(pass_), passlen, ct.byref(salt), saltlen, iterations, ct.byref(key))
+    CLIB.pbkdf2_hmac_sha512(pass_, passlen, salt, saltlen, iterations, key)
     return bytes(key)
 
 
 def read_be(data): 
-    return int(CLIB.read_be(ct.byref(data)))
+    return int(CLIB.read_be(data))
 
 
 def write_be(data, x): 
-    CLIB.write_be(ct.byref(data), x)
+    CLIB.write_be(data, x)
 
 
 def write_be_r(x): 
     data = (tt.uint8_t)()
-    CLIB.write_be(ct.byref(data), x)
+    CLIB.write_be(data, x)
     return bytes(data)
 
 
 def read_le(data): 
-    return int(CLIB.read_le(ct.byref(data)))
+    return int(CLIB.read_le(data))
 
 
 def write_le(data, x): 
-    CLIB.write_le(ct.byref(data), x)
+    CLIB.write_le(data, x)
 
 
 def write_le_r(x): 
     data = (tt.uint8_t)()
-    CLIB.write_le(ct.byref(data), x)
+    CLIB.write_le(data, x)
     return bytes(data)
 
 
 def bn_read_be(in_number, out_number): 
-    CLIB.bn_read_be(ct.byref(in_number), ct.byref(out_number))
+    CLIB.bn_read_be(in_number, ct.byref(out_number))
 
 
 def bn_read_be_r(in_number): 
     out_number = (tt.bignum256)()
-    CLIB.bn_read_be(ct.byref(in_number), ct.byref(out_number))
+    CLIB.bn_read_be(in_number, ct.byref(out_number))
     return bytes(out_number)
 
 
 def bn_write_be(in_number, out_number): 
-    CLIB.bn_write_be(ct.byref(in_number), ct.byref(out_number))
+    CLIB.bn_write_be(ct.byref(in_number), out_number)
 
 
 def bn_write_be_r(in_number): 
     out_number = (tt.uint8_t)()
-    CLIB.bn_write_be(ct.byref(in_number), ct.byref(out_number))
+    CLIB.bn_write_be(ct.byref(in_number), out_number)
     return out_number
 
 
 def bn_read_le(in_number, out_number): 
-    CLIB.bn_read_le(ct.byref(in_number), ct.byref(out_number))
+    CLIB.bn_read_le(in_number, ct.byref(out_number))
 
 
 def bn_read_le_r(in_number): 
     out_number = (tt.bignum256)()
-    CLIB.bn_read_le(ct.byref(in_number), ct.byref(out_number))
+    CLIB.bn_read_le(in_number, ct.byref(out_number))
     return bytes(out_number)
 
 
 def bn_write_le(in_number, out_number): 
-    CLIB.bn_write_le(ct.byref(in_number), ct.byref(out_number))
+    CLIB.bn_write_le(ct.byref(in_number), out_number)
 
 
 def bn_write_le_r(in_number): 
     out_number = (tt.uint8_t)()
-    CLIB.bn_write_le(ct.byref(in_number), ct.byref(out_number))
+    CLIB.bn_write_le(ct.byref(in_number), out_number)
     return out_number
 
 
@@ -1389,29 +1389,29 @@ def bn_divmod1000_r():
 
 
 def bn_format(amnt, prefix, suffix, decimals, exponent, trailing, out, outlen): 
-    return int(CLIB.bn_format(ct.byref(amnt), ct.byref(prefix), ct.byref(suffix), decimals, exponent, trailing, ct.byref(out), outlen))
+    return int(CLIB.bn_format(ct.byref(amnt), prefix, suffix, decimals, exponent, trailing, out, outlen))
 
 
 def base32_encode(in_, inlen, out, outlen, alphabet): 
-    return bytes(CLIB.base32_encode(ct.byref(in_), inlen, ct.byref(out), outlen, ct.byref(alphabet)))
+    return bytes(CLIB.base32_encode(in_, inlen, out, outlen, alphabet))
 
 
 def base32_encode_unsafe(in_, inlen, out): 
-    CLIB.base32_encode_unsafe(ct.byref(in_), inlen, ct.byref(out))
+    CLIB.base32_encode_unsafe(in_, inlen, out)
 
 
 def base32_encode_unsafe_r(in_, inlen): 
     out = (tt.uint8_t)()
-    CLIB.base32_encode_unsafe(ct.byref(in_), inlen, ct.byref(out))
+    CLIB.base32_encode_unsafe(in_, inlen, out)
     return bytes(out)
 
 
 def base32_decode(in_, inlen, out, outlen, alphabet): 
-    return bytes(CLIB.base32_decode(ct.byref(in_), inlen, ct.byref(out), outlen, ct.byref(alphabet)))
+    return bytes(CLIB.base32_decode(in_, inlen, out, outlen, alphabet))
 
 
 def base32_decode_unsafe(in_, inlen, out, alphabet): 
-    return int(CLIB.base32_decode_unsafe(ct.byref(in_), inlen, ct.byref(out), ct.byref(alphabet)))
+    return int(CLIB.base32_decode_unsafe(in_, inlen, out, alphabet))
 
 
 def base32_encoded_length(inlen): 
@@ -1423,66 +1423,66 @@ def base32_decoded_length(inlen):
 
 
 def base58_encode_check(data, len, hasher_type, str, strsize): 
-    return int(CLIB.base58_encode_check(ct.byref(data), len, hasher_type, ct.byref(str), strsize))
+    return int(CLIB.base58_encode_check(data, len, hasher_type, str, strsize))
 
 
 def base58_decode_check(str, hasher_type, data, datalen): 
-    return int(CLIB.base58_decode_check(ct.byref(str), hasher_type, ct.byref(data), datalen))
+    return int(CLIB.base58_decode_check(str, hasher_type, data, datalen))
 
 
 def b58tobin(bin, binszp, b58): 
-    return int(CLIB.b58tobin(ct.byref(bin), ct.byref(binszp), ct.byref(b58)))
+    return int(CLIB.b58tobin(ct.byref(bin), ct.byref(binszp), b58))
 
 
 def b58tobin_r(b58): 
     bin = (ct.c_void_p)()
     binszp = (tt.size_t)()
-    _res = CLIB.b58tobin(ct.byref(bin), ct.byref(binszp), ct.byref(b58))
+    _res = CLIB.b58tobin(ct.byref(bin), ct.byref(binszp), b58)
     return int(_res), bin, binszp
 
 
 def b58check(bin, binsz, hasher_type, base58str): 
-    return int(CLIB.b58check(ct.byref(bin), binsz, hasher_type, ct.byref(base58str)))
+    return int(CLIB.b58check(ct.byref(bin), binsz, hasher_type, base58str))
 
 
 def b58enc(b58, b58sz, data, binsz): 
-    return int(CLIB.b58enc(ct.byref(b58), ct.byref(b58sz), ct.byref(data), binsz))
+    return int(CLIB.b58enc(b58, ct.byref(b58sz), ct.byref(data), binsz))
 
 
 def b58enc_r(data, binsz): 
     b58 = (ct.c_byte)()
     b58sz = (tt.size_t)()
-    _res = CLIB.b58enc(ct.byref(b58), ct.byref(b58sz), ct.byref(data), binsz)
+    _res = CLIB.b58enc(b58, ct.byref(b58sz), ct.byref(data), binsz)
     return int(_res), bytes(b58), b58sz
 
 
 def xmr_base58_addr_encode_check(tag, data, binsz, b58, b58sz): 
-    return int(CLIB.xmr_base58_addr_encode_check(tag, ct.byref(data), binsz, ct.byref(b58), b58sz))
+    return int(CLIB.xmr_base58_addr_encode_check(tag, data, binsz, b58, b58sz))
 
 
 def xmr_base58_addr_decode_check(addr, sz, tag, data, datalen): 
-    return int(CLIB.xmr_base58_addr_decode_check(ct.byref(addr), sz, ct.byref(tag), ct.byref(data), datalen))
+    return int(CLIB.xmr_base58_addr_decode_check(addr, sz, ct.byref(tag), ct.byref(data), datalen))
 
 
 def xmr_base58_encode(b58, b58sz, data, binsz): 
-    return int(CLIB.xmr_base58_encode(ct.byref(b58), ct.byref(b58sz), ct.byref(data), binsz))
+    return int(CLIB.xmr_base58_encode(b58, ct.byref(b58sz), ct.byref(data), binsz))
 
 
 def xmr_base58_encode_r(data, binsz): 
     b58 = (ct.c_byte)()
     b58sz = (tt.size_t)()
-    _res = CLIB.xmr_base58_encode(ct.byref(b58), ct.byref(b58sz), ct.byref(data), binsz)
+    _res = CLIB.xmr_base58_encode(b58, ct.byref(b58sz), ct.byref(data), binsz)
     return int(_res), bytes(b58), b58sz
 
 
 def xmr_base58_decode(b58, b58sz, data, binsz): 
-    return int(CLIB.xmr_base58_decode(ct.byref(b58), b58sz, ct.byref(data), ct.byref(binsz)))
+    return int(CLIB.xmr_base58_decode(b58, b58sz, ct.byref(data), ct.byref(binsz)))
 
 
 def xmr_base58_decode_r(b58, b58sz): 
     data = (ct.c_void_p)()
     binsz = (tt.size_t)()
-    _res = CLIB.xmr_base58_decode(ct.byref(b58), b58sz, ct.byref(data), ct.byref(binsz))
+    _res = CLIB.xmr_base58_decode(b58, b58sz, ct.byref(data), ct.byref(binsz))
     return int(_res), bytes(data), int(binsz)
 
 
@@ -1607,22 +1607,22 @@ def curve25519_square_times_r(in_, count):
 
 
 def curve25519_expand(out, in_): 
-    CLIB.curve25519_expand(out, ct.byref(in_))
+    CLIB.curve25519_expand(out, in_)
 
 
 def curve25519_expand_r(in_): 
     out = (tt.bignum25519)()
-    CLIB.curve25519_expand(out, ct.byref(in_))
+    CLIB.curve25519_expand(out, in_)
     return out
 
 
 def curve25519_contract(out, in_): 
-    CLIB.curve25519_contract(ct.byref(out), in_)
+    CLIB.curve25519_contract(out, in_)
 
 
 def curve25519_contract_r(in_): 
     out = (ct.c_ubyte * 32)()
-    CLIB.curve25519_contract(ct.byref(out), in_)
+    CLIB.curve25519_contract(out, in_)
     return bytes(out)
 
 
@@ -1728,47 +1728,47 @@ def mul256_modm_r(x, y):
 
 
 def expand_raw256_modm(out, in_): 
-    CLIB.expand_raw256_modm(out, ct.byref(in_))
+    CLIB.expand_raw256_modm(out, in_)
 
 
 def expand_raw256_modm_r(in_): 
     out = (tt.bignum256modm)()
-    CLIB.expand_raw256_modm(out, ct.byref(in_))
+    CLIB.expand_raw256_modm(out, in_)
     return out
 
 
 def contract256_modm(out, in_): 
-    CLIB.contract256_modm(ct.byref(out), in_)
+    CLIB.contract256_modm(out, in_)
 
 
 def contract256_modm_r(in_): 
     out = (ct.c_ubyte * 32)()
-    CLIB.contract256_modm(ct.byref(out), in_)
+    CLIB.contract256_modm(out, in_)
     return bytes(out)
 
 
 def contract256_window4_modm(r, in_): 
-    CLIB.contract256_window4_modm(ct.byref(r), in_)
+    CLIB.contract256_window4_modm(r, in_)
 
 
 def contract256_window4_modm_r(in_): 
     r = (ct.c_byte * 64)()
-    CLIB.contract256_window4_modm(ct.byref(r), in_)
+    CLIB.contract256_window4_modm(r, in_)
     return bytes(r)
 
 
 def contract256_slidingwindow_modm(r, s, windowsize): 
-    CLIB.contract256_slidingwindow_modm(ct.byref(r), s, windowsize)
+    CLIB.contract256_slidingwindow_modm(r, s, windowsize)
 
 
 def contract256_slidingwindow_modm_r(s, windowsize): 
     r = (ct.c_byte * 256)()
-    CLIB.contract256_slidingwindow_modm(ct.byref(r), s, windowsize)
+    CLIB.contract256_slidingwindow_modm(r, s, windowsize)
     return bytes(r)
 
 
 def ed25519_verify(x, y, len): 
-    return int(CLIB.ed25519_verify(ct.byref(x), ct.byref(y), len))
+    return int(CLIB.ed25519_verify(x, y, len))
 
 
 def ge25519_p1p1_to_partial(r, p): 
@@ -1872,22 +1872,22 @@ def ge25519_pnielsadd_r(p, q):
 
 
 def ge25519_pack(r, p): 
-    CLIB.ge25519_pack(ct.byref(r), ct.byref(p))
+    CLIB.ge25519_pack(r, ct.byref(p))
 
 
 def ge25519_pack_r(p): 
     r = (ct.c_ubyte * 32)()
-    CLIB.ge25519_pack(ct.byref(r), ct.byref(p))
+    CLIB.ge25519_pack(r, ct.byref(p))
     return bytes(r)
 
 
 def ge25519_unpack_negative_vartime(r, p): 
-    return int(CLIB.ge25519_unpack_negative_vartime(ct.byref(r), ct.byref(p)))
+    return int(CLIB.ge25519_unpack_negative_vartime(ct.byref(r), p))
 
 
 def ge25519_unpack_negative_vartime_r(p): 
     r = (tt.ge25519)()
-    _res = CLIB.ge25519_unpack_negative_vartime(ct.byref(r), ct.byref(p))
+    _res = CLIB.ge25519_unpack_negative_vartime(ct.byref(r), p)
     return int(_res), r
 
 
@@ -2050,12 +2050,12 @@ def curve25519_reduce_r(in_):
 
 
 def curve25519_expand_reduce(out, in_): 
-    CLIB.curve25519_expand_reduce(out, ct.byref(in_))
+    CLIB.curve25519_expand_reduce(out, in_)
 
 
 def curve25519_expand_reduce_r(in_): 
     out = (tt.bignum25519)()
-    CLIB.curve25519_expand_reduce(out, ct.byref(in_))
+    CLIB.curve25519_expand_reduce(out, in_)
     return out
 
 
@@ -2152,17 +2152,17 @@ def ge25519_add_r(a, b, signbit):
 
 
 def ge25519_fromfe_frombytes_vartime(r, s): 
-    CLIB.ge25519_fromfe_frombytes_vartime(ct.byref(r), ct.byref(s))
+    CLIB.ge25519_fromfe_frombytes_vartime(ct.byref(r), s)
 
 
 def ge25519_fromfe_frombytes_vartime_r(s): 
     r = (tt.ge25519)()
-    CLIB.ge25519_fromfe_frombytes_vartime(ct.byref(r), ct.byref(s))
+    CLIB.ge25519_fromfe_frombytes_vartime(ct.byref(r), s)
     return r
 
 
 def ge25519_unpack_vartime(r, s): 
-    return int(CLIB.ge25519_unpack_vartime(ct.byref(r), ct.byref(s)))
+    return int(CLIB.ge25519_unpack_vartime(ct.byref(r), s))
 
 
 def ge25519_scalarmult_base_wrapper(r, s): 
@@ -2190,22 +2190,22 @@ def xmr_size_varint(num):
 
 
 def xmr_write_varint(buff, buff_size, num): 
-    return int(CLIB.xmr_write_varint(ct.byref(buff), buff_size, num))
+    return int(CLIB.xmr_write_varint(buff, buff_size, num))
 
 
 def xmr_write_varint_r(buff_size, num): 
     buff = (tt.uint8_t)()
-    _res = CLIB.xmr_write_varint(ct.byref(buff), buff_size, num)
+    _res = CLIB.xmr_write_varint(buff, buff_size, num)
     return int(_res), bytes(buff)
 
 
 def xmr_read_varint(buff, buff_size, val): 
-    return int(CLIB.xmr_read_varint(ct.byref(buff), buff_size, ct.byref(val)))
+    return int(CLIB.xmr_read_varint(buff, buff_size, ct.byref(val)))
 
 
 def xmr_read_varint_r(buff_size, val): 
     buff = (tt.uint8_t)()
-    _res = CLIB.xmr_read_varint(ct.byref(buff), buff_size, ct.byref(val))
+    _res = CLIB.xmr_read_varint(buff, buff_size, ct.byref(val))
     return int(_res), bytes(buff)
 
 
@@ -2230,7 +2230,7 @@ def xmr_random_scalar_r():
 
 
 def xmr_fast_hash(hash, data, length): 
-    CLIB.xmr_fast_hash(ct.byref(hash), ct.byref(data), length)
+    CLIB.xmr_fast_hash(hash, ct.byref(data), length)
 
 
 def xmr_hasher_init(hasher): 
@@ -2244,13 +2244,13 @@ def xmr_hasher_init_r():
 
 
 def xmr_hasher_final(hasher, hash): 
-    CLIB.xmr_hasher_final(ct.byref(hasher), ct.byref(hash))
+    CLIB.xmr_hasher_final(ct.byref(hasher), hash)
 
 
 def xmr_hasher_final_r(): 
     hasher = tt.KEY_BUFF()
     hash = (tt.uint8_t)()
-    CLIB.xmr_hasher_final(ct.byref(hasher), ct.byref(hash))
+    CLIB.xmr_hasher_final(ct.byref(hasher), hash)
     return hasher, bytes(hash)
 
 

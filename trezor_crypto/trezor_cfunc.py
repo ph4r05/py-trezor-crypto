@@ -6,7 +6,7 @@ from .trezor_cfunc_gen import *
 
 def random_buffer_r(sz):
     buff = (ct.c_uint8 * sz)()
-    cl().random_buffer(ct.byref(buff), sz)
+    cl().random_buffer(buff, sz)
     return bytes(buff)
 
 
