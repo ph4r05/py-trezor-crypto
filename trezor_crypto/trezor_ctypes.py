@@ -3,6 +3,7 @@
 import ctypes as ct
 from .trezor_ctypes_gen import *
 
+POINTER = ct.POINTER
 FE = bignum25519
 MODM = bignum256modm
 KEY_BUFF = ct.c_ubyte * 32

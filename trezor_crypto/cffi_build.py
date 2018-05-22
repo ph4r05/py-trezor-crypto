@@ -1,4 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# Author: Dusan Klinec, ph4r05
+
 # See CFFI docs at https://cffi.readthedocs.org/en/latest/
+# Inspiration:
+#  https://github.com/pyca/pynacl/blob/master/setup.py
+#  https://github.com/jiffyclub/cext23/tree/master/cext23/cffi
+
 from cffi import FFI
 import subprocess
 import errno
@@ -28,6 +36,14 @@ logger = logging.getLogger(__name__)
 ffi = FFI()
 
 
+INT_TYPES = [
+    'uint16_t', 'uint32_t', 'uint64_t',
+    'int16_t', 'int32_t', 'int64_t',
+    'int', 'long', 'size_t', 'ssize_t',
+    'char', 'bool', 'boolean',
+]
+
+
 def get_compile_args():
     return [
         '--std=c99',
@@ -49,8 +65,12 @@ def get_blacklisted_funcs():
 
 def get_functions_out_params():
     return {
+        'random_buffer': [],
         'xmr_hasher_update': [],
-        'xmr_hasher_final': [1],
+        'xmr_hasher_final': [],
+        'groestl512_Init': [],
+        'groestl512_Update': [],
+        'groestl512_Final': [],
     }
 
 
@@ -86,16 +106,29 @@ def get_fake_libs():
                                         '../tools/pycparser/utils/fake_libc_include'))
 
 
-def get_cffi_h_fname():
+def get_package_file_path(name):
+    name = [name] if not isinstance(name, list) else name
     try:
-        cffi_h = pkg_resources.resource_filename(__name__, os.path.join('..', 'data', 'cffi.h'))
+        cffi_h = pkg_resources.resource_filename(__name__, os.path.join(*name))
     except:
-        cffi_h = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'cffi.h'))
+        cffi_h = os.path.abspath(os.path.join(*([os.path.dirname(__file__)] + name)))
     return cffi_h
+
+
+def get_cffi_h_fname():
+    return get_package_file_path(['..', 'data', 'cffi.h'])
+
+
+def get_ctypes_tpl_fname():
+    return get_package_file_path(['..', 'data', 'trezor_ctypes_tpl.py'])
 
 
 def get_ctypes_types_fname():
     return os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_ctypes_gen.py'))
+
+
+def get_ctypes_fnc_fname():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_cfunc_gen.py'))
 
 
 def only_files(headers, allowed):
@@ -264,6 +297,59 @@ def filter_headers(headers, base_dir):
             last_block = abspath
 
     return b'\n'.join(hstack)
+
+
+def is_simple_num_ast(ast):
+    """
+    The given declaration (parameter / return value) is simple int type
+    :return:
+    """
+    if isinstance(ast, c_ast.Decl):
+        return is_simple_num_ast(ast.type)
+    if isinstance(ast, c_ast.Typename):
+        return is_simple_num_ast(ast.type)
+    if isinstance(ast, (c_ast.PtrDecl, c_ast.ArrayDecl)):
+        return False
+    if not isinstance(ast, c_ast.TypeDecl):
+        raise ValueError('Ctype conversion error: %s' % ast)
+
+    tt = ast.type
+    if not isinstance(tt, c_ast.IdentifierType):
+        raise ValueError('Ctype conversion error2: %s' % tt)
+
+    ty = tt.names[0]
+    if len(tt.names) == 2 and (tt.names[0] in ['signed', 'unsigned']):
+        ty = tt.names[1]
+
+    return ty in INT_TYPES
+
+
+def is_byte_array(ast):
+    """
+    pointer to char/uchar/int8/uint8 or array of these types
+    :param ast:
+    :return:
+    """
+    def is_barr_int(ast, arr_det=False):
+        if isinstance(ast, c_ast.Decl):
+            return is_barr_int(ast.type)
+        if isinstance(ast, c_ast.Typename):
+            return is_barr_int(ast.type)
+        if isinstance(ast, (c_ast.PtrDecl, c_ast.ArrayDecl)):
+            return (is_barr_int(ast.type, True) if not arr_det else False)  # only 1D array allowed
+        if not isinstance(ast, c_ast.TypeDecl):
+            raise ValueError('Ctype conversion error: %s' % ast)
+
+        tt = ast.type
+        if not isinstance(tt, c_ast.IdentifierType):
+            raise ValueError('Ctype conversion error2: %s' % tt)
+
+        ty = tt.names[0]
+        if len(tt.names) == 2 and (tt.names[0] in ['signed', 'unsigned']):
+            ty = tt.names[1]
+
+        return arr_det and ty in ['char', 'int', 'uint8_t', 'int8_t']
+    return is_barr_int(ast)
 
 
 def eval_ast(node):
@@ -451,39 +537,43 @@ def main_cffi():
     ffi.cdef(cffi_hdat)
 
 
+class ArgData(object):
+    """
+    Variable declaration / parameter / return type
+    """
+    def __init__(self, ct, pt_type=0, is_const=False, name=None, ast=None, sub_ct=None, arr_dim=None, sub_res=None, *args, **kwargs):
+        self.ct = ct
+        self.pt_type = pt_type  # 1 = pointer, 2 = array
+        self.is_const = is_const
+        self.name = name
+        self.ast = ast
+        self.sub_type = sub_ct
+        self.sub_res = sub_res
+        self.is_byval = is_simple_num_ast(ast) if ast else None
+        self.is_int = self.is_byval
+        self.is_bytes = is_byte_array(ast) if ast else None
+        self.arr_dim = arr_dim
+
+    def is_void(self):
+        return self.ct is None
+
+    def is_const_or_byval(self):
+        return self.is_byval or self.is_const
+
+    def pt_def(self):
+        return self.sub_type if self.sub_type else self.ct
+
+
 class AstToCtype(object):
     def __init__(self, defined_types):
         self.defined_types = set(defined_types)
-        self.int_types = [
-            'uint16_t', 'uint32_t', 'uint64_t',
-            'int16_t', 'int32_t', 'int64_t',
-            'int', 'long', 'size_t', 'ssize_t',
-            'char', 'bool', 'boolean',
-        ]
 
     def is_byval(self, ast):
         """
         Passed by value / cannot modify
         :return:
         """
-        if isinstance(ast, c_ast.Decl):
-            return self.is_byval(ast.type)
-        if isinstance(ast, c_ast.Typename):
-            return self.is_byval(ast.type)
-        if isinstance(ast, (c_ast.PtrDecl, c_ast.ArrayDecl)):
-            return False
-        if not isinstance(ast, c_ast.TypeDecl):
-            raise ValueError('Ctype conversion error: %s' % ast)
-
-        tt = ast.type
-        if not isinstance(tt, c_ast.IdentifierType):
-            raise ValueError('Ctype conversion error2: %s' % tt)
-
-        ty = tt.names[0]
-        if len(tt.names) == 2 and tt.names[0] == 'unsigned':
-            ty = tt.names[1]
-
-        return ty in self.int_types
+        return is_simple_num_ast(ast)
 
     def ast_to_ctype(self, ast):
         """
@@ -500,14 +590,14 @@ class AstToCtype(object):
         is_arr = isinstance(ast, c_ast.ArrayDecl)
         if is_arr:
             r = self.ast_to_ctype(ast.type)
-            tp = '%s * %s' % (r[0], eval_ast(ast.dim))
-            return tp, 2, r[2], r[3], tp
+            tp = '%s * %s' % (r.ct, eval_ast(ast.dim))
+            return ArgData(tp, 2, r.is_const, r.name, ast=ast, sub_ct=tp, arr_dim=eval_ast(ast.dim), sub_res=r)
 
         if is_ptr:
             r = self.ast_to_ctype(ast.type)
-            if r[0] is None:
-                return 'ct.c_void_p', 1, r[2], r[3], None
-            return 'tt.POINTER(%s)' % r[0], 1, r[2], r[3], r[0]
+            if r.is_void():
+                return ArgData('ct.c_void_p', 1, r.is_const, r.name, ast=ast)
+            return ArgData('tt.POINTER(%s)' % r.ct, 1, r.is_const, r.name, ast=ast, sub_ct=r.ct)
 
         if not isinstance(ast, c_ast.TypeDecl):
             raise ValueError('Ctype conversion error: %s' % ast)
@@ -516,19 +606,41 @@ class AstToCtype(object):
         if not isinstance(tt, c_ast.IdentifierType):
             raise ValueError('Ctype conversion error2: %s' % tt)
 
+        unsigned = ''
         is_const = 'const' in ast.quals
-        if tt.names == ['unsigned', 'char']:
-            return 'ct.c_ubyte', 0, is_const, ast.declname
-        elif len(tt.names) == 1 and (tt.names[0] in self.defined_types or tt.names[0].endswith('CTX')):
-            return 'tt.%s' % tt.names[0], 0, is_const, ast.declname
-        elif tt.names == ['void']:
-            return None, 0, is_const, ast.declname, None
+        ttnames = tt.names
+        if ttnames[0] == 'signed':
+            ttnames.pop(0)
+        if ttnames[0] == 'unsigned':
+            ttnames.pop(0)
+            unsigned = 'u'
+            if len(ttnames) == 0:
+                ttnames.append('int')
+
+        if ttnames == ['char']:
+            return ArgData('ct.c_%sbyte' % unsigned, 0, is_const, fix_arg_name(ast.declname), ast=ast)
+        elif len(ttnames) == 1 and (ttnames[0] in self.defined_types or ttnames[0].endswith('CTX')):
+            return ArgData('tt.%s' % ttnames[0], 0, is_const, fix_arg_name(ast.declname), ast=ast)
+        elif ttnames == ['void']:
+            return ArgData(None, 0, is_const, fix_arg_name(ast.declname), ast=ast)
         else:
-            return ('ct.c_%s' % tt.names[0]), 0, is_const, ast.declname
+            return ArgData('ct.c_%s%s' % (unsigned, ttnames[0]), 0, is_const, fix_arg_name(ast.declname), ast=ast)
             # raise ValueError('Unknown vale: %s' % tt.names)
 
 
-def get_output_args(ast, args, consts, ret_type, lut):
+def fix_arg_name(name):
+    """
+    Fix arg name / reserved word?
+    :param name:
+    :return:
+    """
+    if name in ['pass', 'break', 'continue', 'except', 'try', 'for', 'while', 'do', 'def', 'class', 'in',
+                'isinstance', 'tuple', 'list', 'set', 'None']:
+        return '%s_' % name
+    return name
+
+
+def get_output_args(ast, args, ret_type, lut):
     """
     Determines indices of output arguments
     :param ast:
@@ -546,6 +658,7 @@ def get_output_args(ast, args, consts, ret_type, lut):
     first_grp = None
     last_grp = None
     num_grp = 0
+    consts = [x.is_const_or_byval() for x in args]
     for idx, (k, g) in enumerate(itertools.groupby(enumerate(consts), key=lambda y: y[1])):
         first_grp = (k, list(g)) if first_grp is None else first_grp
         last_grp = (k, list(g))
@@ -563,17 +676,32 @@ def get_output_args(ast, args, consts, ret_type, lut):
         return []
 
 
+def arg_name(arg, idx):
+    arg_names = ['r', 'a', 'b', 'c', 'd', 'e', 'f', 'h']
+    return arg.name if arg.name else arg_names[idx]
+
+
 def arg_call_form(arg, name):
-    if arg[1]:
-        return 'ct.byref(%s)' % name
+    # TODO: bytes() wrapper, int wrapper?
+    if arg.pt_type:
+        return 'ct.byref(%s)' % (name if name else arg.name)
     else:
         return name
+
+
+def arg_return(arg, name=None):
+    if arg.is_bytes:
+        return 'bytes(%s)' % (name if name else arg.name)
+    elif arg.is_int:
+        return 'int(%s)' % (name if name else arg.name)
+    else:
+        return name if name else arg.name
 
 
 def arg_call_list(args, arg_str):
     res = []
     for idx, c in enumerate(args):
-        if c is None or c[0] is None:
+        if c.is_void():
             continue
         res.append(arg_call_form(c, arg_str[idx]))
     return res
@@ -607,7 +735,8 @@ def ctypes_functions():
 
     class FuncDefVisitor(c_ast.NodeVisitor):
         def __init__(self):
-            self.defs = []
+            self.defs_clib = []
+            self.defs_fnc = []
             self.ar = ArrayEval()
             self.ctyper = AstToCtype(defined_types)
 
@@ -618,56 +747,54 @@ def ctypes_functions():
 
             # node.show()
             print(type(node), node.name, node.quals, node.type, node.storage, node.funcspec)
-            n_args = len(node.type.args.params)
+            ast_args = node.type.args.params
+            n_args = len(ast_args)
             args = []
-            consts = []
-            for n in node.type.args.params:
+            for n in ast_args:
                 arg = self.ctyper.ast_to_ctype(n)
-                if arg[0] is None and n_args == 1:
+                if arg.is_void() and n_args == 1:
                     break
                 args.append(arg)
-                consts.append(self.ctyper.is_byval(n) or arg[2])
+
             ret_type = self.ctyper.ast_to_ctype(node.type.type)
-            ret_nonvoid = ret_type and ret_type[0]
+            ret_type.name = '_res'
+            print('%s: %s' % (node.name, ret_type.ct))
 
-            # Is the first arg non-const with name r? Output argument
-            # Is the first N non-const followed by at least const / trivial?
-            # print(args)
-            # print(consts)
-            out_args = get_output_args(node, args, consts, ret_type, lut=out_params_out)
-            # print(out_args)
+            ret_nonvoid = not ret_type.is_void()
+            out_args = get_output_args(node, args, ret_type, lut=out_params_out)
 
-            arg_list = ', '.join([x[0] for x in args if x and x[0]])
-            print('CLIB.%s.argtypes = [%s]' % (node.name, arg_list))
+            arg_list = ', '.join([x.ct for x in args if x and not x.is_void()])
+            cdef = 'CLIB.%s.argtypes = [%s]' % (node.name, arg_list)
+            self.defs_clib.append(cdef)
             if ret_nonvoid:
-                print('CLIB.%s.restype = %s' % (node.name, ret_type[0]))
+                cdef = 'CLIB.%s.restype = %s' % (node.name, ret_type.ct)
+                self.defs_clib.append(cdef)
 
-            arg_names = ['r', 'a', 'b', 'c', 'd', 'e', 'f', 'h']
-            arg_str = [(x[3] if x[3] else arg_names[idx]) for idx, x in enumerate(args) if x[0]] if args else []
+            arg_str = [arg_name(x, idx) for idx, x in enumerate(args) if not x.is_void()]
             arg_par = arg_call_list(args, arg_str)
 
+            fnc_call = 'CLIB.%s(%s)' % (node.name, ', '.join(arg_par))
             tpl = 'def %s(%s): \n' % (node.name, ', '.join(arg_str))
-            tpl += '    return CLIB.%s(%s)\n' % (node.name, ', '.join(arg_par))
+            tpl += '    %s%s\n' % ('return ' if ret_nonvoid else '', arg_return(ret_type, fnc_call))
             tpl += '\n'
-            print(tpl)
+            self.defs_fnc.append(tpl)
 
             if len(out_args) == 0:
                 return
 
-            arg_str_n = [(x[3] if x[3] else arg_names[idx]) for idx, x in enumerate(args) if x[0] and idx not in out_args] if args else []
-            arg_ret = [(x[3] if x[3] else arg_names[idx]) for idx, x in enumerate(args) if x[0] and idx in out_args] if args else []
-            ret_list = (['_res'] if ret_nonvoid else []) + arg_ret
+            arg_str_n = [arg_name(x, idx) for idx, x in enumerate(args) if not x.is_void() and idx not in out_args] if args else []
+            arg_ret = [arg_name(x, idx) for idx, x in enumerate(args) if not x.is_void() and idx in out_args] if args else []
+
+            arg_ret = [arg_return(args[idx], x) for idx, x in enumerate(arg_ret)]
+            ret_list = ([arg_return(ret_type)] if ret_nonvoid else []) + arg_ret
 
             tpl = 'def %s_r(%s): \n' % (node.name, ', '.join(arg_str_n))
             for idx in out_args:
-                tpl += '    %s = (%s)()\n' % (arg_str[idx], args[idx][4] if len(args[idx]) > 4 else args[idx][0])
+                tpl += '    %s = (%s)()\n' % (arg_str[idx], args[idx].pt_def())
             tpl += '    %sCLIB.%s(%s)\n' % ('_res = ' if ret_nonvoid else '', node.name, ', '.join(arg_par))
             tpl += '    return %s\n' % (', '.join(ret_list))
             tpl += '\n'
-            print(tpl)
-
-            # self.ar.visit(node)
-            # self.defs.append(node)
+            self.defs_fnc.append(tpl)
 
     # quick hack for sizeof
     to_parse = replace_sizeofs(to_parse)
@@ -675,12 +802,18 @@ def ctypes_functions():
 
     v = FuncDefVisitor()
     v.visit(ast)
-    nast = c_ast.FileAST(v.defs)
 
-    generator = c_generator.CGenerator()
-    genc = generator.visit(nast)
+    with open(get_ctypes_tpl_fname()) as fh:
+        tpl_data = fh.read()
 
-    return genc
+    fname = get_ctypes_fnc_fname()
+    with open(fname, 'w') as fh:
+        setup_defs = ['    %s' % x for x in v.defs_clib]
+        tpl_data = re.sub(r'^[^\n]*# {{ SETUP_LIB }}[^\n]*$', '\n'.join(setup_defs), tpl_data, flags=re.MULTILINE)
+        tpl_data = re.sub(r'^[^\n]*# {{ WRAPPERS }}[^\n]*$', '\n'.join(v.defs_fnc), tpl_data, flags=re.MULTILINE)
+        fh.write(tpl_data)
+
+    return
 
 
 def ctypes_gen(includes=None, use_fake_libs=False, debug=False):
@@ -695,8 +828,6 @@ def ctypes_gen(includes=None, use_fake_libs=False, debug=False):
         includes = []
 
     types_fname = get_ctypes_types_fname()
-    func_fname = os.path.abspath(os.path.join(os.path.dirname(__file__), 'trezor_cfunc_gen.py'))
-
     clang_args = get_compile_args() + [
         '-Isrc/'
     ]
@@ -721,7 +852,7 @@ def ctypes_gen(includes=None, use_fake_libs=False, debug=False):
     for cf in h_files:
         args.append(quote(cf))
 
-    print(' '.join(args))
+    logger.info('Clang args: %s' % (' '.join(args)))
 
     _back = sys.argv
     sys.argv = args
