@@ -67,7 +67,7 @@ FUNCS_PARAMS = [
     FuncCodeGenPar('ge25519_unpack_vartime', no_ctr=True),
     FuncCodeGenPar('xmr_fast_hash', no_ctr=True),
     FuncCodeGenPar('xmr_hasher_update', [], no_ct=True, no_ctr=True),
-    FuncCodeGenPar('xmr_hasher_final', [1], out_inits={1: 'tt.KEY_BUFF()'}),
+    FuncCodeGenPar('xmr_hasher_final', [1], out_inits={1: 'tt.KEY_BUFF()'}, ret_ov='bytes(hash)'),
     FuncCodeGenPar('xmr_hash_to_scalar', no_ct=True, no_ctr=True),
     FuncCodeGenPar('xmr_hash_to_ec', no_ct=True, no_ctr=True),
     FuncCodeGenPar('groestl512_Init'),
@@ -829,7 +829,10 @@ def ctypes_functions():
                     tpl += '    %s = (%s)()\n' % (arg_str[idx], args[idx].pt_def())
 
             tpl += '    %sCLIB.%s(%s)\n' % ('_res = ' if ret_nonvoid else '', node.name, ', '.join(arg_par))
-            tpl += '    return %s\n' % (', '.join(ret_list))
+            if code_pars and code_pars.ret_ov:
+                tpl += '    return %s' % code_pars.ret_ov
+            else:
+                tpl += '    return %s\n' % (', '.join(ret_list))
             tpl += '\n'
             if code_pars is None or not code_pars.no_ctr:
                 self.defs_fnc.append(tpl)
