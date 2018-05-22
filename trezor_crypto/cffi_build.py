@@ -67,7 +67,7 @@ FUNCS_PARAMS = [
     FuncCodeGenPar('ge25519_unpack_vartime', no_ctr=True),
     FuncCodeGenPar('xmr_fast_hash', no_ctr=True),
     FuncCodeGenPar('xmr_hasher_update', [], no_ct=True, no_ctr=True),
-    FuncCodeGenPar('xmr_hasher_final', [1], out_inits={0: 'tt.KEY_BUFF()'}),
+    FuncCodeGenPar('xmr_hasher_final', [1], out_inits={1: 'tt.KEY_BUFF()'}),
     FuncCodeGenPar('xmr_hash_to_scalar', no_ct=True, no_ctr=True),
     FuncCodeGenPar('xmr_hash_to_ec', no_ct=True, no_ctr=True),
     FuncCodeGenPar('groestl512_Init'),
