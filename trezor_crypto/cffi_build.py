@@ -712,7 +712,7 @@ def arg_name(arg, idx):
 
 def arg_call_form(arg, name):
     # TODO: bytes() wrapper, int wrapper?
-    if arg.pt_type:
+    if arg.pt_type == 1 and not arg.is_bytes:
         return 'ct.byref(%s)' % (name if name else arg.name)
     else:
         return name
