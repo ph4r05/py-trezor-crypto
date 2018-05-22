@@ -1,1 +1,1 @@
-from tcry_cffi import *
+from .tcry_cffi import *

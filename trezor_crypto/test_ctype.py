@@ -1,1 +1,1 @@
-from tcry_ctype import *
+from .tcry_ctype import *
