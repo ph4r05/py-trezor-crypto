@@ -20,6 +20,7 @@ import pkg_resources
 import logging
 import importlib
 import itertools
+import collections
 from pycparser import c_parser, c_ast, c_generator
 
 
@@ -44,6 +45,37 @@ INT_TYPES = [
 ]
 
 
+class FuncCodeGenPar(object):
+    def __init__(self, name, opars=None, out_inits=None, out_rets=None, ret_ov=None, no_ct=False, no_ctr=False):
+        self.name = name
+        self.opars = opars  # output parameters
+        self.out_inits = out_inits  # output params initialization
+        self.out_rets = out_rets  # output params return transformation
+        self.ret_ov = ret_ov  # return value override
+        self.no_ct = no_ct
+        self.no_ctr = no_ctr
+
+    def get_out_init(self, idx):
+        return self.out_inits[idx] if self.out_inits and idx in self.out_inits else None
+
+
+
+FUNCS_PARAMS = [
+    FuncCodeGenPar('random_buffer'),
+    FuncCodeGenPar('get256_modm', no_ctr=True),
+    FuncCodeGenPar('expand256_modm', no_ct=True, no_ctr=True),
+    FuncCodeGenPar('ge25519_unpack_vartime', no_ctr=True),
+    FuncCodeGenPar('xmr_fast_hash', no_ctr=True),
+    FuncCodeGenPar('xmr_hasher_update', [], no_ct=True, no_ctr=True),
+    FuncCodeGenPar('xmr_hasher_final', out_inits={0: 'tt.KEY_BUFF()'}),
+    FuncCodeGenPar('xmr_hash_to_scalar', no_ct=True, no_ctr=True),
+    FuncCodeGenPar('xmr_hash_to_ec', no_ct=True, no_ctr=True),
+    FuncCodeGenPar('groestl512_Init'),
+    FuncCodeGenPar('groestl512_Update'),
+    FuncCodeGenPar('groestl512_Final'),
+]
+
+
 def get_compile_args():
     return [
         '--std=c99',
@@ -64,14 +96,11 @@ def get_blacklisted_funcs():
 
 
 def get_functions_out_params():
-    return {
-        'random_buffer': [],
-        'xmr_hasher_update': [],
-        'xmr_hasher_final': [],
-        'groestl512_Init': [],
-        'groestl512_Update': [],
-        'groestl512_Final': [],
-    }
+    return {x.name: x.opars for x in FUNCS_PARAMS if x.opars is not None}
+
+
+def get_function_codegen_params():
+    return collections.defaultdict(lambda: None, {x.name: x for x in FUNCS_PARAMS})
 
 
 def get_main_header():
@@ -739,6 +768,7 @@ def ctypes_functions():
             self.defs_fnc = []
             self.ar = ArrayEval()
             self.ctyper = AstToCtype(defined_types)
+            self.code_pars = get_function_codegen_params()
 
         def visit_Decl(self, node):
             if not take_coord(node.coord) or node.name in blacklist: return
@@ -746,7 +776,8 @@ def ctypes_functions():
             if 'static' in node.storage: return
 
             # node.show()
-            print(type(node), node.name, node.quals, node.type, node.storage, node.funcspec)
+            # Argument list, return value processing
+
             ast_args = node.type.args.params
             n_args = len(ast_args)
             args = []
@@ -758,11 +789,11 @@ def ctypes_functions():
 
             ret_type = self.ctyper.ast_to_ctype(node.type.type)
             ret_type.name = '_res'
-            print('%s: %s' % (node.name, ret_type.ct))
-
             ret_nonvoid = not ret_type.is_void()
             out_args = get_output_args(node, args, ret_type, lut=out_params_out)
+            code_pars = self.code_pars[node.name]  # type: FuncCodeGenPar
 
+            # Ctype code gen
             arg_list = ', '.join([x.ct for x in args if x and not x.is_void()])
             cdef = 'CLIB.%s.argtypes = [%s]' % (node.name, arg_list)
             self.defs_clib.append(cdef)
@@ -777,7 +808,8 @@ def ctypes_functions():
             tpl = 'def %s(%s): \n' % (node.name, ', '.join(arg_str))
             tpl += '    %s%s\n' % ('return ' if ret_nonvoid else '', arg_return(ret_type, fnc_call))
             tpl += '\n'
-            self.defs_fnc.append(tpl)
+            if code_pars is None or not code_pars.no_ct:
+                self.defs_fnc.append(tpl)
 
             if len(out_args) == 0:
                 return
@@ -790,11 +822,17 @@ def ctypes_functions():
 
             tpl = 'def %s_r(%s): \n' % (node.name, ', '.join(arg_str_n))
             for idx in out_args:
-                tpl += '    %s = (%s)()\n' % (arg_str[idx], args[idx].pt_def())
+                oinit = code_pars.get_out_init(idx) if code_pars else None
+                if oinit:
+                    tpl += '    %s = %s\n' % (arg_str[idx], oinit)
+                else:
+                    tpl += '    %s = (%s)()\n' % (arg_str[idx], args[idx].pt_def())
+
             tpl += '    %sCLIB.%s(%s)\n' % ('_res = ' if ret_nonvoid else '', node.name, ', '.join(arg_par))
             tpl += '    return %s\n' % (', '.join(ret_list))
             tpl += '\n'
-            self.defs_fnc.append(tpl)
+            if code_pars is None or not code_pars.no_ctr:
+                self.defs_fnc.append(tpl)
 
     # quick hack for sizeof
     to_parse = replace_sizeofs(to_parse)
