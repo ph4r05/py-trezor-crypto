@@ -46,7 +46,7 @@ def open_lib(lib_path=None, try_env=False, no_init=False):
     CLIB = ct.cdll.LoadLibrary(ext_fpath)
     if not no_init:
         setup_lib(CLIB)
-        init_lib(CLIB)
+        init_lib()
 
     return CLIB
 
