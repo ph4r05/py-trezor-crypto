@@ -1,4 +1,5 @@
 import os
+from distutils.sysconfig import get_config_var
 
 
 # taken from https://github.com/pypa/setuptools/blob/master/setuptools/command/bdist_egg.py
@@ -43,5 +44,10 @@ def get_ext_outputs(bdist_dir=None):
         for filename in dirs:
             paths[os.path.join(base, filename)] = (paths[base] + filename + '/')
 
-    return all_outputs
+    return all_outputs, bdist_dir
+
+
+def get_mod_suffix():
+    return get_config_var('EXT_SUFFIX')  # e.g., '.cpython-36m-darwin.so'
+
 
