@@ -897,6 +897,14 @@ def ctypes_gen(includes=None, use_fake_libs=False, debug=False):
     clang2py.main()
     sys.argv = _back
 
+    # post edit
+    with open(types_fname) as fh:
+        types_data = fh.read()
+
+    types_data = re.sub(r'\]\s*$', ', \'POINTER_T\']\n\n', types_data)
+    with open(types_fname, 'w') as fh:
+        fh.write(types_data)
+
     ctypes_functions()
 
 
