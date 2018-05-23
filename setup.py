@@ -3,9 +3,13 @@ import os
 import subprocess
 import errno
 import glob
+import logging
 from setuptools import setup, find_packages, Extension
 from setuptools.command.test import test as TestCommand
 from distutils.command.build_ext import build_ext
+
+
+logger = logging.getLogger(__name__)
 
 
 class PyTest(TestCommand):
@@ -72,17 +76,18 @@ def pkg_config(args):
     p, t = None, None
 
     try:
-        p = subprocess.Popen(['pkg-config'] + args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        p = subprocess.Popen(['pkg-config'] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     except OSError as e:
         if e.errno != errno.ENOENT:
             raise
-    else:
-        t = p.stdout.read().strip()
-    if p.wait() == 0 and t:
-        return t
 
-    return None
+    if p.wait() != 0:
+        err = p.stderr.read().strip()
+        print(err.decode('utf8'))
+
+    t = p.stdout.read().strip()
+    return t
 
 
 def libsodium_flags():

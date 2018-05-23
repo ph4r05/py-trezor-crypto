@@ -59,7 +59,6 @@ class FuncCodeGenPar(object):
         return self.out_inits[idx] if self.out_inits and idx in self.out_inits else None
 
 
-
 FUNCS_PARAMS = [
     FuncCodeGenPar('random_buffer'),
     FuncCodeGenPar('get256_modm', no_ctr=True),
@@ -195,17 +194,18 @@ def pkg_config(args):
     p, t = None, None
 
     try:
-        p = subprocess.Popen(['pkg-config'] + args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        p = subprocess.Popen(['pkg-config'] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     except OSError as e:
         if e.errno != errno.ENOENT:
             raise
-    else:
-        t = p.stdout.read().strip()
-    if p.wait() == 0 and t:
-        return t
 
-    return None
+    if p.wait() != 0:
+        err = p.stderr.read().strip()
+        print(err.decode('utf8'))
+
+    t = p.stdout.read().strip()
+    return t
 
 
 def libsodium_flags():
