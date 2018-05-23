@@ -220,7 +220,7 @@ def libsodium_flags():
     else:
         ldflags = ldflags.split(' ')
 
-    return cflags, ldflags
+    return [x for x in cflags if x], [x for x in ldflags if x]
 
 
 def get_compiler():

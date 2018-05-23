@@ -98,11 +98,11 @@ def libsodium_flags():
     else:
         ldflags = ldflags.split(' ')
 
-    return cflags, ldflags
+    return [x for x in cflags if x], [x for x in ldflags if x]
 
 
-setup_dir = os.path.dirname(__file__)
-base_dir = os.path.join(os.path.dirname(__file__), 'src')
+setup_dir = os.path.abspath(os.path.dirname(__file__))
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'src'))
 CPPS = glob.glob(os.path.join(base_dir, "*.c")) \
           + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.c")) \
           + glob.glob(os.path.join(os.path.join(base_dir, 'ed25519-donna'), "*.c"))\
@@ -147,6 +147,24 @@ except(IOError, ImportError):
         long_description = f.read()
 
 
+dev_extras = [
+    'nose',
+    'pep8',
+    'tox',
+    'aiounittest',
+    'requests',
+    'pympler',
+    'pypandoc',
+    'pandoc',
+]
+
+docs_extras = [
+    'Sphinx>=1.0',  # autodoc_member_order = 'bysource', autodoc_default_flags
+    'sphinx_rtd_theme',
+    'sphinxcontrib-programoutput',
+]
+
+
 setup(
     name='py_trezor_crypto_ph4',
     version='0.0.2',
@@ -175,6 +193,12 @@ setup(
     cmdclass={
         'test': PyTest,
         # 'build_ext': BuildCtypeExt,
-    })
+    },
+    extras_require={
+        'dev': dev_extras,
+        'docs': docs_extras,
+    },
+)
+
 
 
