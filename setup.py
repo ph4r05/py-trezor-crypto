@@ -87,6 +87,7 @@ def pkg_config(args):
         print(err.decode('utf8'))
 
     t = p.stdout.read().strip()
+    print(t)
     return t
 
 
@@ -117,6 +118,7 @@ CPPS = glob.glob(os.path.join(base_dir, "*.c")) \
 # see args descriptions at
 # https://docs.python.org/3/distutils/apiref.html#distutils.core.Extension
 sodium_flags = libsodium_flags()
+print(sodium_flags)
 CPPS = remove_files(CPPS, ['rfc6979.c'])
 CPPS = [rel_setup(x) for x in CPPS]
 
