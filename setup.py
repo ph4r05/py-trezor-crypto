@@ -84,25 +84,30 @@ def pkg_config(args):
 
     if p.wait() != 0:
         err = p.stderr.read().strip()
-        print(err.decode('utf8'))
+        logger.warning(err.decode('utf8'))
+        return None
 
     t = p.stdout.read().strip()
-    print(t)
     return t
 
 
 def libsodium_flags():
-    cflags = os.getenv('LIBSODIUM_CFLAGS', '')
-    ldflags = os.getenv('LIBSODIUM_LDLAGS', '-lsodium')
-    if cflags is None:
-        cflags = pkg_config(['--cflags', 'libsodium']).decode('utf8').split(' ')
-    else:
-        cflags = cflags.split(' ')
+    cflags = os.getenv('LIBSODIUM_CFLAGS', None)
+    ldflags = os.getenv('LIBSODIUM_LDLAGS', None)
 
-    if ldflags is None:
-        ldflags = pkg_config(['--libs', 'libsodium']).decode('utf8').split(' ')
+    if cflags is not None:
+        return cflags.split(' ')
     else:
+        cflags = pkg_config(['--cflags', 'libsodium']).decode('utf8').split(' ')
+    if cflags is None:
+        cflags = []
+
+    if ldflags is not None:
         ldflags = ldflags.split(' ')
+    else:
+        ldflags = pkg_config(['--libs', 'libsodium']).decode('utf8').split(' ')
+    if ldflags is None:
+        ldflags = ['-lsodium']
 
     return [x for x in cflags if x], [x for x in ldflags if x]
 
