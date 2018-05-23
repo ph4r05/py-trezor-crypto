@@ -299,13 +299,16 @@ def filter_headers(headers, base_dir):
     headers_done = False
     skip_block = False
     last_block = None
+    last_m = None
 
     for idx, line in enumerate(lns):
-        m = re.match(b'^# [\d]+ "(.+?)".*$', line)
+        m = re.match(b'^# ([\d]+ "(.+?)".*)$', line)
         if m is None:
             if not headers_done:
                 headers_done = True
                 skip_block = last_block is None or not last_block.startswith(base_dir)
+                if not skip_block:
+                    hstack.append(b'\n// %s' % last_m.group(1))
 
             if skip_block:
                 continue
@@ -319,7 +322,8 @@ def filter_headers(headers, base_dir):
             elif skip_block:
                 continue
 
-            pth = m.group(1)
+            last_m = m
+            pth = m.group(2)
             built_in = pth.startswith(b'<')
             last_block = None
 
