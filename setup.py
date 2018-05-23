@@ -51,6 +51,10 @@ class BuildCtypeExt(build_ext):
         return super().get_ext_filename(ext_name)
 
 
+def rel_setup(path):
+    return os.path.relpath(path, os.path.abspath(os.path.dirname(__file__)))
+
+
 def remove_files(files, blacklist):
     nheaders = []
     for h in files:
@@ -97,7 +101,7 @@ def libsodium_flags():
     return cflags, ldflags
 
 
-setup_dir = os.path.abspath(os.path.dirname(__file__))
+setup_dir = os.path.dirname(__file__)
 base_dir = os.path.join(os.path.dirname(__file__), 'src')
 CPPS = glob.glob(os.path.join(base_dir, "*.c")) \
           + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.c")) \
@@ -109,6 +113,8 @@ CPPS = glob.glob(os.path.join(base_dir, "*.c")) \
 # https://docs.python.org/3/distutils/apiref.html#distutils.core.Extension
 sodium_flags = libsodium_flags()
 CPPS = remove_files(CPPS, ['rfc6979.c'])
+CPPS = [rel_setup(x) for x in CPPS]
+
 extensions = [
     # this compiles the code for the ctypes example
     CTypes(

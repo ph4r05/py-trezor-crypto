@@ -126,6 +126,10 @@ def replace_sizeofs(to_parse):
     return to_parse
 
 
+def rel_setup(path):
+    return os.path.relpath(path, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+
 def get_basedir():
     return os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
 
@@ -531,7 +535,7 @@ def main_cffi():
     debug = int(os.getenv('TCRY_CFFI_DEBUG', 0))
     sodium_flags = libsodium_flags()
 
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
+    base_dir = get_basedir()
 
     c_files = glob.glob(os.path.join(base_dir, "*.c")) \
               + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.c")) \
@@ -539,6 +543,7 @@ def main_cffi():
               + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.c"))
 
     c_files = remove_files(c_files, ['rfc6979.c'])
+    c_files = [rel_setup(x) for x in c_files]
 
     # root header file to process - including all components for the module
     tpl = get_main_header()
