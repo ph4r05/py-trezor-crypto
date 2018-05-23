@@ -24,6 +24,12 @@ In order to use this module please install `libsodium`.
 sudo apt-get install libsodium-dev
 ```
 
+## Pypi
+
+```bash
+pip install py_trezor_crypto_ph4
+```
+
 ## Dev Requirements:
 
 In order to generate bindings from the [trezor-crypto] header files the following tools are needed:
