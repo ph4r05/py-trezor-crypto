@@ -129,9 +129,36 @@ extensions = [
     )
     ]
 
+
+try:
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
+    long_description = long_description.replace("\r", '')
+
+except(IOError, ImportError):
+    import io
+    with io.open('README.md', encoding='utf-8') as f:
+        long_description = f.read()
+
+
 setup(
-    name='trezor_crypto',
+    name='py_trezor_crypto_ph4',
     version='0.0.2',
+    description='Trezor-crypto python binding',
+    long_description=long_description,
+    url='https://github.com/ph4r05/py-trezor-crypto',
+    author='Dusan Klinec',
+    author_email='dusan.klinec@gmail.com',
+    license='MIT',
+    include_package_data=True,
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Topic :: Security',
+    ],
     packages=find_packages(),
     # ext_modules=cythonize(extensions),
     ext_modules=extensions,
