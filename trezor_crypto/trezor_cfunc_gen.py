@@ -76,278 +76,728 @@ def setup_lib(CLIB):
     :param CLIB:
     :return:
     """
+    
+    # uint32_t random32(void)
     CLIB.random32.argtypes = []
     CLIB.random32.restype = tt.uint32_t
+    
+    # void random_buffer(uint8_t *buf, size_t len)
     CLIB.random_buffer.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t]
+    
+    # uint32_t random_uniform(uint32_t n)
     CLIB.random_uniform.argtypes = [tt.uint32_t]
     CLIB.random_uniform.restype = tt.uint32_t
+    
+    # void random_permute(char *buf, size_t len)
     CLIB.random_permute.argtypes = [tt.POINTER(ct.c_byte), tt.size_t]
+    
+    # int random_init(void)
     CLIB.random_init.argtypes = []
     CLIB.random_init.restype = ct.c_int
+    
+    # void sha1_Transform(const uint32_t *state_in, const uint32_t *data, uint32_t *state_out)
     CLIB.sha1_Transform.argtypes = [tt.POINTER(tt.uint32_t), tt.POINTER(tt.uint32_t), tt.POINTER(tt.uint32_t)]
+    
+    # void sha1_Init(SHA1_CTX *)
     CLIB.sha1_Init.argtypes = [tt.POINTER(tt.SHA1_CTX)]
+    
+    # void sha1_Update(SHA1_CTX *, const uint8_t *, size_t)
     CLIB.sha1_Update.argtypes = [tt.POINTER(tt.SHA1_CTX), tt.POINTER(tt.uint8_t), tt.size_t]
+    
+    # void sha1_Final(SHA1_CTX *, uint8_t [20])
     CLIB.sha1_Final.argtypes = [tt.POINTER(tt.SHA1_CTX), tt.uint8_t * 20]
+    
+    # char *sha1_End(SHA1_CTX *, char [(20 * 2) + 1])
     CLIB.sha1_End.argtypes = [tt.POINTER(tt.SHA1_CTX), ct.c_byte * 41]
     CLIB.sha1_End.restype = tt.POINTER(ct.c_byte)
+    
+    # void sha1_Raw(const uint8_t *, size_t, uint8_t [20])
     CLIB.sha1_Raw.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.uint8_t * 20]
+    
+    # char *sha1_Data(const uint8_t *, size_t, char [(20 * 2) + 1])
     CLIB.sha1_Data.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, ct.c_byte * 41]
     CLIB.sha1_Data.restype = tt.POINTER(ct.c_byte)
+    
+    # void sha256_Transform(const uint32_t *state_in, const uint32_t *data, uint32_t *state_out)
     CLIB.sha256_Transform.argtypes = [tt.POINTER(tt.uint32_t), tt.POINTER(tt.uint32_t), tt.POINTER(tt.uint32_t)]
+    
+    # void sha256_Init(SHA256_CTX *)
     CLIB.sha256_Init.argtypes = [tt.POINTER(tt.SHA256_CTX)]
+    
+    # void sha256_Update(SHA256_CTX *, const uint8_t *, size_t)
     CLIB.sha256_Update.argtypes = [tt.POINTER(tt.SHA256_CTX), tt.POINTER(tt.uint8_t), tt.size_t]
+    
+    # void sha256_Final(SHA256_CTX *, uint8_t [32])
     CLIB.sha256_Final.argtypes = [tt.POINTER(tt.SHA256_CTX), tt.uint8_t * 32]
+    
+    # char *sha256_End(SHA256_CTX *, char [(32 * 2) + 1])
     CLIB.sha256_End.argtypes = [tt.POINTER(tt.SHA256_CTX), ct.c_byte * 65]
     CLIB.sha256_End.restype = tt.POINTER(ct.c_byte)
+    
+    # void sha256_Raw(const uint8_t *, size_t, uint8_t [32])
     CLIB.sha256_Raw.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.uint8_t * 32]
+    
+    # char *sha256_Data(const uint8_t *, size_t, char [(32 * 2) + 1])
     CLIB.sha256_Data.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, ct.c_byte * 65]
     CLIB.sha256_Data.restype = tt.POINTER(ct.c_byte)
+    
+    # void sha512_Transform(const uint64_t *state_in, const uint64_t *data, uint64_t *state_out)
     CLIB.sha512_Transform.argtypes = [tt.POINTER(tt.uint64_t), tt.POINTER(tt.uint64_t), tt.POINTER(tt.uint64_t)]
+    
+    # void sha512_Init(SHA512_CTX *)
     CLIB.sha512_Init.argtypes = [tt.POINTER(tt.SHA512_CTX)]
+    
+    # void sha512_Update(SHA512_CTX *, const uint8_t *, size_t)
     CLIB.sha512_Update.argtypes = [tt.POINTER(tt.SHA512_CTX), tt.POINTER(tt.uint8_t), tt.size_t]
+    
+    # void sha512_Final(SHA512_CTX *, uint8_t [64])
     CLIB.sha512_Final.argtypes = [tt.POINTER(tt.SHA512_CTX), tt.uint8_t * 64]
+    
+    # char *sha512_End(SHA512_CTX *, char [(64 * 2) + 1])
     CLIB.sha512_End.argtypes = [tt.POINTER(tt.SHA512_CTX), ct.c_byte * 129]
     CLIB.sha512_End.restype = tt.POINTER(ct.c_byte)
+    
+    # void sha512_Raw(const uint8_t *, size_t, uint8_t [64])
     CLIB.sha512_Raw.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.uint8_t * 64]
+    
+    # char *sha512_Data(const uint8_t *, size_t, char [(64 * 2) + 1])
     CLIB.sha512_Data.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, ct.c_byte * 129]
     CLIB.sha512_Data.restype = tt.POINTER(ct.c_byte)
+    
+    # void sha3_224_Init(SHA3_CTX *ctx)
     CLIB.sha3_224_Init.argtypes = [tt.POINTER(tt.SHA3_CTX)]
+    
+    # void sha3_256_Init(SHA3_CTX *ctx)
     CLIB.sha3_256_Init.argtypes = [tt.POINTER(tt.SHA3_CTX)]
+    
+    # void sha3_384_Init(SHA3_CTX *ctx)
     CLIB.sha3_384_Init.argtypes = [tt.POINTER(tt.SHA3_CTX)]
+    
+    # void sha3_512_Init(SHA3_CTX *ctx)
     CLIB.sha3_512_Init.argtypes = [tt.POINTER(tt.SHA3_CTX)]
+    
+    # void sha3_Update(SHA3_CTX *ctx, const char *msg, size_t size)
     CLIB.sha3_Update.argtypes = [tt.POINTER(tt.SHA3_CTX), tt.POINTER(ct.c_ubyte), tt.size_t]
+    
+    # void sha3_Final(SHA3_CTX *ctx, char *result)
     CLIB.sha3_Final.argtypes = [tt.POINTER(tt.SHA3_CTX), tt.POINTER(ct.c_ubyte)]
+    
+    # void keccak_Final(SHA3_CTX *ctx, char *result)
     CLIB.keccak_Final.argtypes = [tt.POINTER(tt.SHA3_CTX), tt.POINTER(ct.c_ubyte)]
+    
+    # void keccak_256(const char *data, size_t len, char *digest)
     CLIB.keccak_256.argtypes = [tt.POINTER(ct.c_ubyte), tt.size_t, tt.POINTER(ct.c_ubyte)]
+    
+    # void keccak_512(const char *data, size_t len, char *digest)
     CLIB.keccak_512.argtypes = [tt.POINTER(ct.c_ubyte), tt.size_t, tt.POINTER(ct.c_ubyte)]
+    
+    # void sha3_256(const char *data, size_t len, char *digest)
     CLIB.sha3_256.argtypes = [tt.POINTER(ct.c_ubyte), tt.size_t, tt.POINTER(ct.c_ubyte)]
+    
+    # void sha3_512(const char *data, size_t len, char *digest)
     CLIB.sha3_512.argtypes = [tt.POINTER(ct.c_ubyte), tt.size_t, tt.POINTER(ct.c_ubyte)]
+    
+    # void blake256_Init(BLAKE256_CTX *)
     CLIB.blake256_Init.argtypes = [tt.POINTER(tt.BLAKE256_CTX)]
+    
+    # void blake256_Update(BLAKE256_CTX *, const uint8_t *, size_t)
     CLIB.blake256_Update.argtypes = [tt.POINTER(tt.BLAKE256_CTX), tt.POINTER(tt.uint8_t), tt.size_t]
+    
+    # void blake256_Final(BLAKE256_CTX *, uint8_t *)
     CLIB.blake256_Final.argtypes = [tt.POINTER(tt.BLAKE256_CTX), tt.POINTER(tt.uint8_t)]
+    
+    # void blake256(const uint8_t *, size_t, uint8_t *)
     CLIB.blake256.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(tt.uint8_t)]
+    
+    # void groestl512_Init(void *cc)
     CLIB.groestl512_Init.argtypes = [ct.c_void_p]
+    
+    # void groestl512_Update(void *cc, const void *data, size_t len)
     CLIB.groestl512_Update.argtypes = [ct.c_void_p, ct.c_void_p, tt.size_t]
+    
+    # void groestl512_Final(void *cc, void *dst)
     CLIB.groestl512_Final.argtypes = [ct.c_void_p, ct.c_void_p]
+    
+    # void groestl512_DoubleTrunc(void *cc, void *dst)
     CLIB.groestl512_DoubleTrunc.argtypes = [ct.c_void_p, ct.c_void_p]
+    
+    # void hasher_Init(Hasher *hasher, HasherType type)
     CLIB.hasher_Init.argtypes = [tt.POINTER(tt.Hasher), tt.HasherType]
+    
+    # void hasher_Reset(Hasher *hasher)
     CLIB.hasher_Reset.argtypes = [tt.POINTER(tt.Hasher)]
+    
+    # void hasher_Update(Hasher *hasher, const uint8_t *data, size_t length)
     CLIB.hasher_Update.argtypes = [tt.POINTER(tt.Hasher), tt.POINTER(tt.uint8_t), tt.size_t]
+    
+    # void hasher_Final(Hasher *hasher, uint8_t hash[32])
     CLIB.hasher_Final.argtypes = [tt.POINTER(tt.Hasher), tt.uint8_t * 32]
+    
+    # void hasher_Raw(HasherType type, const uint8_t *data, size_t length, uint8_t hash[32])
     CLIB.hasher_Raw.argtypes = [tt.HasherType, tt.POINTER(tt.uint8_t), tt.size_t, tt.uint8_t * 32]
+    
+    # void hmac_sha256_Init(HMAC_SHA256_CTX *hctx, const uint8_t *key, const uint32_t keylen)
     CLIB.hmac_sha256_Init.argtypes = [tt.POINTER(tt.HMAC_SHA256_CTX), tt.POINTER(tt.uint8_t), tt.uint32_t]
+    
+    # void hmac_sha256_Update(HMAC_SHA256_CTX *hctx, const uint8_t *msg, const uint32_t msglen)
     CLIB.hmac_sha256_Update.argtypes = [tt.POINTER(tt.HMAC_SHA256_CTX), tt.POINTER(tt.uint8_t), tt.uint32_t]
+    
+    # void hmac_sha256_Final(HMAC_SHA256_CTX *hctx, uint8_t *hmac)
     CLIB.hmac_sha256_Final.argtypes = [tt.POINTER(tt.HMAC_SHA256_CTX), tt.POINTER(tt.uint8_t)]
+    
+    # void hmac_sha256(const uint8_t *key, const uint32_t keylen, const uint8_t *msg, const uint32_t msglen, uint8_t *hmac)
     CLIB.hmac_sha256.argtypes = [tt.POINTER(tt.uint8_t), tt.uint32_t, tt.POINTER(tt.uint8_t), tt.uint32_t, tt.POINTER(tt.uint8_t)]
+    
+    # void hmac_sha256_prepare(const uint8_t *key, const uint32_t keylen, uint32_t *opad_digest, uint32_t *ipad_digest)
     CLIB.hmac_sha256_prepare.argtypes = [tt.POINTER(tt.uint8_t), tt.uint32_t, tt.POINTER(tt.uint32_t), tt.POINTER(tt.uint32_t)]
+    
+    # void hmac_sha512_Init(HMAC_SHA512_CTX *hctx, const uint8_t *key, const uint32_t keylen)
     CLIB.hmac_sha512_Init.argtypes = [tt.POINTER(tt.HMAC_SHA512_CTX), tt.POINTER(tt.uint8_t), tt.uint32_t]
+    
+    # void hmac_sha512_Update(HMAC_SHA512_CTX *hctx, const uint8_t *msg, const uint32_t msglen)
     CLIB.hmac_sha512_Update.argtypes = [tt.POINTER(tt.HMAC_SHA512_CTX), tt.POINTER(tt.uint8_t), tt.uint32_t]
+    
+    # void hmac_sha512_Final(HMAC_SHA512_CTX *hctx, uint8_t *hmac)
     CLIB.hmac_sha512_Final.argtypes = [tt.POINTER(tt.HMAC_SHA512_CTX), tt.POINTER(tt.uint8_t)]
+    
+    # void hmac_sha512(const uint8_t *key, const uint32_t keylen, const uint8_t *msg, const uint32_t msglen, uint8_t *hmac)
     CLIB.hmac_sha512.argtypes = [tt.POINTER(tt.uint8_t), tt.uint32_t, tt.POINTER(tt.uint8_t), tt.uint32_t, tt.POINTER(tt.uint8_t)]
+    
+    # void hmac_sha512_prepare(const uint8_t *key, const uint32_t keylen, uint64_t *opad_digest, uint64_t *ipad_digest)
     CLIB.hmac_sha512_prepare.argtypes = [tt.POINTER(tt.uint8_t), tt.uint32_t, tt.POINTER(tt.uint64_t), tt.POINTER(tt.uint64_t)]
+    
+    # void pbkdf2_hmac_sha256_Init(PBKDF2_HMAC_SHA256_CTX *pctx, const uint8_t *pass, int passlen, const uint8_t *salt, int saltlen)
     CLIB.pbkdf2_hmac_sha256_Init.argtypes = [tt.POINTER(tt.PBKDF2_HMAC_SHA256_CTX), tt.POINTER(tt.uint8_t), ct.c_int, tt.POINTER(tt.uint8_t), ct.c_int]
+    
+    # void pbkdf2_hmac_sha256_Update(PBKDF2_HMAC_SHA256_CTX *pctx, uint32_t iterations)
     CLIB.pbkdf2_hmac_sha256_Update.argtypes = [tt.POINTER(tt.PBKDF2_HMAC_SHA256_CTX), tt.uint32_t]
+    
+    # void pbkdf2_hmac_sha256_Final(PBKDF2_HMAC_SHA256_CTX *pctx, uint8_t *key)
     CLIB.pbkdf2_hmac_sha256_Final.argtypes = [tt.POINTER(tt.PBKDF2_HMAC_SHA256_CTX), tt.POINTER(tt.uint8_t)]
+    
+    # void pbkdf2_hmac_sha256(const uint8_t *pass, int passlen, const uint8_t *salt, int saltlen, uint32_t iterations, uint8_t *key)
     CLIB.pbkdf2_hmac_sha256.argtypes = [tt.POINTER(tt.uint8_t), ct.c_int, tt.POINTER(tt.uint8_t), ct.c_int, tt.uint32_t, tt.POINTER(tt.uint8_t)]
+    
+    # void pbkdf2_hmac_sha512_Init(PBKDF2_HMAC_SHA512_CTX *pctx, const uint8_t *pass, int passlen, const uint8_t *salt, int saltlen)
     CLIB.pbkdf2_hmac_sha512_Init.argtypes = [tt.POINTER(tt.PBKDF2_HMAC_SHA512_CTX), tt.POINTER(tt.uint8_t), ct.c_int, tt.POINTER(tt.uint8_t), ct.c_int]
+    
+    # void pbkdf2_hmac_sha512_Update(PBKDF2_HMAC_SHA512_CTX *pctx, uint32_t iterations)
     CLIB.pbkdf2_hmac_sha512_Update.argtypes = [tt.POINTER(tt.PBKDF2_HMAC_SHA512_CTX), tt.uint32_t]
+    
+    # void pbkdf2_hmac_sha512_Final(PBKDF2_HMAC_SHA512_CTX *pctx, uint8_t *key)
     CLIB.pbkdf2_hmac_sha512_Final.argtypes = [tt.POINTER(tt.PBKDF2_HMAC_SHA512_CTX), tt.POINTER(tt.uint8_t)]
+    
+    # void pbkdf2_hmac_sha512(const uint8_t *pass, int passlen, const uint8_t *salt, int saltlen, uint32_t iterations, uint8_t *key)
     CLIB.pbkdf2_hmac_sha512.argtypes = [tt.POINTER(tt.uint8_t), ct.c_int, tt.POINTER(tt.uint8_t), ct.c_int, tt.uint32_t, tt.POINTER(tt.uint8_t)]
+    
+    # uint32_t read_be(const uint8_t *data)
     CLIB.read_be.argtypes = [tt.POINTER(tt.uint8_t)]
     CLIB.read_be.restype = tt.uint32_t
+    
+    # void write_be(uint8_t *data, uint32_t x)
     CLIB.write_be.argtypes = [tt.POINTER(tt.uint8_t), tt.uint32_t]
+    
+    # uint32_t read_le(const uint8_t *data)
     CLIB.read_le.argtypes = [tt.POINTER(tt.uint8_t)]
     CLIB.read_le.restype = tt.uint32_t
+    
+    # void write_le(uint8_t *data, uint32_t x)
     CLIB.write_le.argtypes = [tt.POINTER(tt.uint8_t), tt.uint32_t]
+    
+    # void bn_read_be(const uint8_t *in_number, bignum256 *out_number)
     CLIB.bn_read_be.argtypes = [tt.POINTER(tt.uint8_t), tt.POINTER(tt.bignum256)]
+    
+    # void bn_write_be(const bignum256 *in_number, uint8_t *out_number)
     CLIB.bn_write_be.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.uint8_t)]
+    
+    # void bn_read_le(const uint8_t *in_number, bignum256 *out_number)
     CLIB.bn_read_le.argtypes = [tt.POINTER(tt.uint8_t), tt.POINTER(tt.bignum256)]
+    
+    # void bn_write_le(const bignum256 *in_number, uint8_t *out_number)
     CLIB.bn_write_le.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.uint8_t)]
+    
+    # void bn_read_uint32(uint32_t in_number, bignum256 *out_number)
     CLIB.bn_read_uint32.argtypes = [tt.uint32_t, tt.POINTER(tt.bignum256)]
+    
+    # void bn_read_uint64(uint64_t in_number, bignum256 *out_number)
     CLIB.bn_read_uint64.argtypes = [tt.uint64_t, tt.POINTER(tt.bignum256)]
+    
+    # int bn_bitcount(const bignum256 *a)
     CLIB.bn_bitcount.argtypes = [tt.POINTER(tt.bignum256)]
     CLIB.bn_bitcount.restype = ct.c_int
+    
+    # int bn_digitcount(const bignum256 *a)
     CLIB.bn_digitcount.argtypes = [tt.POINTER(tt.bignum256)]
     CLIB.bn_digitcount.restype = ct.c_uint
+    
+    # void bn_zero(bignum256 *a)
     CLIB.bn_zero.argtypes = [tt.POINTER(tt.bignum256)]
+    
+    # int bn_is_zero(const bignum256 *a)
     CLIB.bn_is_zero.argtypes = [tt.POINTER(tt.bignum256)]
     CLIB.bn_is_zero.restype = ct.c_int
+    
+    # void bn_one(bignum256 *a)
     CLIB.bn_one.argtypes = [tt.POINTER(tt.bignum256)]
+    
+    # int bn_is_less(const bignum256 *a, const bignum256 *b)
     CLIB.bn_is_less.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
     CLIB.bn_is_less.restype = ct.c_int
+    
+    # int bn_is_equal(const bignum256 *a, const bignum256 *b)
     CLIB.bn_is_equal.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
     CLIB.bn_is_equal.restype = ct.c_int
+    
+    # void bn_cmov(bignum256 *res, int cond, const bignum256 *truecase, const bignum256 *falsecase)
     CLIB.bn_cmov.argtypes = [tt.POINTER(tt.bignum256), ct.c_int, tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_lshift(bignum256 *a)
     CLIB.bn_lshift.argtypes = [tt.POINTER(tt.bignum256)]
+    
+    # void bn_rshift(bignum256 *a)
     CLIB.bn_rshift.argtypes = [tt.POINTER(tt.bignum256)]
+    
+    # void bn_setbit(bignum256 *a, uint8_t bit)
     CLIB.bn_setbit.argtypes = [tt.POINTER(tt.bignum256), tt.uint8_t]
+    
+    # void bn_clearbit(bignum256 *a, uint8_t bit)
     CLIB.bn_clearbit.argtypes = [tt.POINTER(tt.bignum256), tt.uint8_t]
+    
+    # uint32_t bn_testbit(bignum256 *a, uint8_t bit)
     CLIB.bn_testbit.argtypes = [tt.POINTER(tt.bignum256), tt.uint8_t]
     CLIB.bn_testbit.restype = tt.uint32_t
+    
+    # void bn_xor(bignum256 *a, const bignum256 *b, const bignum256 *c)
     CLIB.bn_xor.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_mult_half(bignum256 *x, const bignum256 *prime)
     CLIB.bn_mult_half.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_mult_k(bignum256 *x, uint8_t k, const bignum256 *prime)
     CLIB.bn_mult_k.argtypes = [tt.POINTER(tt.bignum256), tt.uint8_t, tt.POINTER(tt.bignum256)]
+    
+    # void bn_mod(bignum256 *x, const bignum256 *prime)
     CLIB.bn_mod.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_multiply(const bignum256 *k, bignum256 *x, const bignum256 *prime)
     CLIB.bn_multiply.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_fast_mod(bignum256 *x, const bignum256 *prime)
     CLIB.bn_fast_mod.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_sqrt(bignum256 *x, const bignum256 *prime)
     CLIB.bn_sqrt.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_inverse(bignum256 *x, const bignum256 *prime)
     CLIB.bn_inverse.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_normalize(bignum256 *a)
     CLIB.bn_normalize.argtypes = [tt.POINTER(tt.bignum256)]
+    
+    # void bn_add(bignum256 *a, const bignum256 *b)
     CLIB.bn_add.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_addmod(bignum256 *a, const bignum256 *b, const bignum256 *prime)
     CLIB.bn_addmod.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_addi(bignum256 *a, uint32_t b)
     CLIB.bn_addi.argtypes = [tt.POINTER(tt.bignum256), tt.uint32_t]
+    
+    # void bn_subi(bignum256 *a, uint32_t b, const bignum256 *prime)
     CLIB.bn_subi.argtypes = [tt.POINTER(tt.bignum256), tt.uint32_t, tt.POINTER(tt.bignum256)]
+    
+    # void bn_subtractmod(const bignum256 *a, const bignum256 *b, bignum256 *res, const bignum256 *prime)
     CLIB.bn_subtractmod.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_subtract(const bignum256 *a, const bignum256 *b, bignum256 *res)
     CLIB.bn_subtract.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256), tt.POINTER(tt.bignum256)]
+    
+    # void bn_divmod58(bignum256 *a, uint32_t *r)
     CLIB.bn_divmod58.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.uint32_t)]
+    
+    # void bn_divmod1000(bignum256 *a, uint32_t *r)
     CLIB.bn_divmod1000.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(tt.uint32_t)]
+    
+    # size_t bn_format(const bignum256 *amnt, const char *prefix, const char *suffix, int decimals, int exponent, bool trailing, char *out, size_t outlen)
     CLIB.bn_format.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(ct.c_byte), tt.POINTER(ct.c_byte), ct.c_uint, ct.c_int, ct.c_bool, tt.POINTER(ct.c_byte), tt.size_t]
     CLIB.bn_format.restype = tt.size_t
+    
+    # char *base32_encode(const uint8_t *in, size_t inlen, char *out, size_t outlen, const char *alphabet)
     CLIB.base32_encode.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(ct.c_byte), tt.size_t, tt.POINTER(ct.c_byte)]
     CLIB.base32_encode.restype = tt.POINTER(ct.c_byte)
+    
+    # void base32_encode_unsafe(const uint8_t *in, size_t inlen, uint8_t *out)
     CLIB.base32_encode_unsafe.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(tt.uint8_t)]
+    
+    # uint8_t *base32_decode(const char *in, size_t inlen, uint8_t *out, size_t outlen, const char *alphabet)
     CLIB.base32_decode.argtypes = [tt.POINTER(ct.c_byte), tt.size_t, tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(ct.c_byte)]
     CLIB.base32_decode.restype = tt.POINTER(tt.uint8_t)
+    
+    # bool base32_decode_unsafe(const uint8_t *in, size_t inlen, uint8_t *out, const char *alphabet)
     CLIB.base32_decode_unsafe.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(tt.uint8_t), tt.POINTER(ct.c_byte)]
     CLIB.base32_decode_unsafe.restype = ct.c_bool
+    
+    # size_t base32_encoded_length(size_t inlen)
     CLIB.base32_encoded_length.argtypes = [tt.size_t]
     CLIB.base32_encoded_length.restype = tt.size_t
+    
+    # size_t base32_decoded_length(size_t inlen)
     CLIB.base32_decoded_length.argtypes = [tt.size_t]
     CLIB.base32_decoded_length.restype = tt.size_t
+    
+    # int base58_encode_check(const uint8_t *data, int len, HasherType hasher_type, char *str, int strsize)
     CLIB.base58_encode_check.argtypes = [tt.POINTER(tt.uint8_t), ct.c_int, tt.HasherType, tt.POINTER(ct.c_byte), ct.c_int]
     CLIB.base58_encode_check.restype = ct.c_int
+    
+    # int base58_decode_check(const char *str, HasherType hasher_type, uint8_t *data, int datalen)
     CLIB.base58_decode_check.argtypes = [tt.POINTER(ct.c_byte), tt.HasherType, tt.POINTER(tt.uint8_t), ct.c_int]
     CLIB.base58_decode_check.restype = ct.c_int
+    
+    # bool b58tobin(void *bin, size_t *binszp, const char *b58)
     CLIB.b58tobin.argtypes = [ct.c_void_p, tt.POINTER(tt.size_t), tt.POINTER(ct.c_byte)]
     CLIB.b58tobin.restype = ct.c_bool
+    
+    # int b58check(const void *bin, size_t binsz, HasherType hasher_type, const char *base58str)
     CLIB.b58check.argtypes = [ct.c_void_p, tt.size_t, tt.HasherType, tt.POINTER(ct.c_byte)]
     CLIB.b58check.restype = ct.c_int
+    
+    # bool b58enc(char *b58, size_t *b58sz, const void *data, size_t binsz)
     CLIB.b58enc.argtypes = [tt.POINTER(ct.c_byte), tt.POINTER(tt.size_t), ct.c_void_p, tt.size_t]
     CLIB.b58enc.restype = ct.c_bool
+    
+    # int xmr_base58_addr_encode_check(uint64_t tag, const uint8_t *data, size_t binsz, char *b58, size_t b58sz)
     CLIB.xmr_base58_addr_encode_check.argtypes = [tt.uint64_t, tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(ct.c_byte), tt.size_t]
     CLIB.xmr_base58_addr_encode_check.restype = ct.c_int
+    
+    # int xmr_base58_addr_decode_check(const char *addr, size_t sz, uint64_t *tag, void *data, size_t datalen)
     CLIB.xmr_base58_addr_decode_check.argtypes = [tt.POINTER(ct.c_byte), tt.size_t, tt.POINTER(tt.uint64_t), ct.c_void_p, tt.size_t]
     CLIB.xmr_base58_addr_decode_check.restype = ct.c_int
+    
+    # bool xmr_base58_encode(char *b58, size_t *b58sz, const void *data, size_t binsz)
     CLIB.xmr_base58_encode.argtypes = [tt.POINTER(ct.c_byte), tt.POINTER(tt.size_t), ct.c_void_p, tt.size_t]
     CLIB.xmr_base58_encode.restype = ct.c_bool
+    
+    # bool xmr_base58_decode(const char *b58, size_t b58sz, void *data, size_t *binsz)
     CLIB.xmr_base58_decode.argtypes = [tt.POINTER(ct.c_byte), tt.size_t, ct.c_void_p, tt.POINTER(tt.size_t)]
     CLIB.xmr_base58_decode.restype = ct.c_bool
+    
+    # void curve25519_copy(bignum25519 out, const bignum25519 in)
     CLIB.curve25519_copy.argtypes = [tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_add(bignum25519 out, const bignum25519 a, const bignum25519 b)
     CLIB.curve25519_add.argtypes = [tt.bignum25519, tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_add_after_basic(bignum25519 out, const bignum25519 a, const bignum25519 b)
     CLIB.curve25519_add_after_basic.argtypes = [tt.bignum25519, tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_add_reduce(bignum25519 out, const bignum25519 a, const bignum25519 b)
     CLIB.curve25519_add_reduce.argtypes = [tt.bignum25519, tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_sub(bignum25519 out, const bignum25519 a, const bignum25519 b)
     CLIB.curve25519_sub.argtypes = [tt.bignum25519, tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_scalar_product(bignum25519 out, const bignum25519 in, const uint32_t scalar)
     CLIB.curve25519_scalar_product.argtypes = [tt.bignum25519, tt.bignum25519, tt.uint32_t]
+    
+    # void curve25519_sub_after_basic(bignum25519 out, const bignum25519 a, const bignum25519 b)
     CLIB.curve25519_sub_after_basic.argtypes = [tt.bignum25519, tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_sub_reduce(bignum25519 out, const bignum25519 a, const bignum25519 b)
     CLIB.curve25519_sub_reduce.argtypes = [tt.bignum25519, tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_neg(bignum25519 out, const bignum25519 a)
     CLIB.curve25519_neg.argtypes = [tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_mul(bignum25519 out, const bignum25519 a, const bignum25519 b)
     CLIB.curve25519_mul.argtypes = [tt.bignum25519, tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_square(bignum25519 out, const bignum25519 in)
     CLIB.curve25519_square.argtypes = [tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_square_times(bignum25519 out, const bignum25519 in, int count)
     CLIB.curve25519_square_times.argtypes = [tt.bignum25519, tt.bignum25519, ct.c_int]
+    
+    # void curve25519_expand(bignum25519 out, const char in[32])
     CLIB.curve25519_expand.argtypes = [tt.bignum25519, ct.c_ubyte * 32]
+    
+    # void curve25519_contract(char out[32], const bignum25519 in)
     CLIB.curve25519_contract.argtypes = [ct.c_ubyte * 32, tt.bignum25519]
+    
+    # void curve25519_swap_conditional(bignum25519 a, bignum25519 b, uint32_t iswap)
     CLIB.curve25519_swap_conditional.argtypes = [tt.bignum25519, tt.bignum25519, tt.uint32_t]
+    
+    # void curve25519_pow_two5mtwo0_two250mtwo0(bignum25519 b)
     CLIB.curve25519_pow_two5mtwo0_two250mtwo0.argtypes = [tt.bignum25519]
+    
+    # void curve25519_recip(bignum25519 out, const bignum25519 z)
     CLIB.curve25519_recip.argtypes = [tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_pow_two252m3(bignum25519 two252m3, const bignum25519 z)
     CLIB.curve25519_pow_two252m3.argtypes = [tt.bignum25519, tt.bignum25519]
+    
+    # void reduce256_modm(bignum256modm r)
     CLIB.reduce256_modm.argtypes = [tt.bignum256modm]
+    
+    # void barrett_reduce256_modm(bignum256modm r, const bignum256modm q1, const bignum256modm r1)
     CLIB.barrett_reduce256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm, tt.bignum256modm]
+    
+    # void add256_modm(bignum256modm r, const bignum256modm x, const bignum256modm y)
     CLIB.add256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm, tt.bignum256modm]
+    
+    # void neg256_modm(bignum256modm r, const bignum256modm x)
     CLIB.neg256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm]
+    
+    # void sub256_modm(bignum256modm r, const bignum256modm x, const bignum256modm y)
     CLIB.sub256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm, tt.bignum256modm]
+    
+    # void mul256_modm(bignum256modm r, const bignum256modm x, const bignum256modm y)
     CLIB.mul256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm, tt.bignum256modm]
+    
+    # void expand256_modm(bignum256modm out, const char *in, size_t len)
     CLIB.expand256_modm.argtypes = [tt.bignum256modm, tt.POINTER(ct.c_ubyte), tt.size_t]
+    
+    # void expand_raw256_modm(bignum256modm out, const char in[32])
     CLIB.expand_raw256_modm.argtypes = [tt.bignum256modm, ct.c_ubyte * 32]
+    
+    # void contract256_modm(char out[32], const bignum256modm in)
     CLIB.contract256_modm.argtypes = [ct.c_ubyte * 32, tt.bignum256modm]
+    
+    # void contract256_window4_modm(char r[64], const bignum256modm in)
     CLIB.contract256_window4_modm.argtypes = [ct.c_byte * 64, tt.bignum256modm]
+    
+    # void contract256_slidingwindow_modm(char r[256], const bignum256modm s, int windowsize)
     CLIB.contract256_slidingwindow_modm.argtypes = [ct.c_byte * 256, tt.bignum256modm, ct.c_int]
+    
+    # int ed25519_verify(const char *x, const char *y, size_t len)
     CLIB.ed25519_verify.argtypes = [tt.POINTER(ct.c_ubyte), tt.POINTER(ct.c_ubyte), tt.size_t]
     CLIB.ed25519_verify.restype = ct.c_int
+    
+    # void ge25519_p1p1_to_partial(ge25519 *r, const ge25519_p1p1 *p)
     CLIB.ge25519_p1p1_to_partial.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519_p1p1)]
+    
+    # void ge25519_p1p1_to_full(ge25519 *r, const ge25519_p1p1 *p)
     CLIB.ge25519_p1p1_to_full.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519_p1p1)]
+    
+    # void ge25519_full_to_pniels(ge25519_pniels *p, const ge25519 *r)
     CLIB.ge25519_full_to_pniels.argtypes = [tt.POINTER(tt.ge25519_pniels), tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_double_p1p1(ge25519_p1p1 *r, const ge25519 *p)
     CLIB.ge25519_double_p1p1.argtypes = [tt.POINTER(tt.ge25519_p1p1), tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_nielsadd2_p1p1(ge25519_p1p1 *r, const ge25519 *p, const ge25519_niels *q, char signbit)
     CLIB.ge25519_nielsadd2_p1p1.argtypes = [tt.POINTER(tt.ge25519_p1p1), tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519_niels), ct.c_ubyte]
+    
+    # void ge25519_pnielsadd_p1p1(ge25519_p1p1 *r, const ge25519 *p, const ge25519_pniels *q, char signbit)
     CLIB.ge25519_pnielsadd_p1p1.argtypes = [tt.POINTER(tt.ge25519_p1p1), tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519_pniels), ct.c_ubyte]
+    
+    # void ge25519_double_partial(ge25519 *r, const ge25519 *p)
     CLIB.ge25519_double_partial.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_double(ge25519 *r, const ge25519 *p)
     CLIB.ge25519_double.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_nielsadd2(ge25519 *r, const ge25519_niels *q)
     CLIB.ge25519_nielsadd2.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519_niels)]
+    
+    # void ge25519_pnielsadd(ge25519_pniels *r, const ge25519 *p, const ge25519_pniels *q)
     CLIB.ge25519_pnielsadd.argtypes = [tt.POINTER(tt.ge25519_pniels), tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519_pniels)]
+    
+    # void ge25519_pack(char r[32], const ge25519 *p)
     CLIB.ge25519_pack.argtypes = [ct.c_ubyte * 32, tt.POINTER(tt.ge25519)]
+    
+    # int ge25519_unpack_negative_vartime(ge25519 *r, const char p[32])
     CLIB.ge25519_unpack_negative_vartime.argtypes = [tt.POINTER(tt.ge25519), ct.c_ubyte * 32]
     CLIB.ge25519_unpack_negative_vartime.restype = ct.c_int
+    
+    # void ge25519_set_neutral(ge25519 *r)
     CLIB.ge25519_set_neutral.argtypes = [tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_double_scalarmult_vartime(ge25519 *r, const ge25519 *p1, const bignum256modm s1, const bignum256modm s2)
     CLIB.ge25519_double_scalarmult_vartime.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519), tt.bignum256modm, tt.bignum256modm]
+    
+    # void ge25519_double_scalarmult_vartime2(ge25519 *r, const ge25519 *p1, const bignum256modm s1, const ge25519 *p2, const bignum256modm s2)
     CLIB.ge25519_double_scalarmult_vartime2.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519), tt.bignum256modm, tt.POINTER(tt.ge25519), tt.bignum256modm]
+    
+    # void ge25519_scalarmult(ge25519 *r, const ge25519 *p1, const bignum256modm s1)
     CLIB.ge25519_scalarmult.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519), tt.bignum256modm]
+    
+    # void set256_modm(bignum256modm r, uint64_t v)
     CLIB.set256_modm.argtypes = [tt.bignum256modm, tt.uint64_t]
+    
+    # int get256_modm(uint64_t *v, const bignum256modm r)
     CLIB.get256_modm.argtypes = [tt.POINTER(tt.uint64_t), tt.bignum256modm]
     CLIB.get256_modm.restype = ct.c_int
+    
+    # int eq256_modm(const bignum256modm x, const bignum256modm y)
     CLIB.eq256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm]
     CLIB.eq256_modm.restype = ct.c_int
+    
+    # int cmp256_modm(const bignum256modm x, const bignum256modm y)
     CLIB.cmp256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm]
     CLIB.cmp256_modm.restype = ct.c_int
+    
+    # int iszero256_modm(const bignum256modm x)
     CLIB.iszero256_modm.argtypes = [tt.bignum256modm]
     CLIB.iszero256_modm.restype = ct.c_int
+    
+    # void copy256_modm(bignum256modm r, const bignum256modm x)
     CLIB.copy256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm]
+    
+    # int check256_modm(const bignum256modm x)
     CLIB.check256_modm.argtypes = [tt.bignum256modm]
     CLIB.check256_modm.restype = ct.c_int
+    
+    # void mulsub256_modm(bignum256modm r, const bignum256modm a, const bignum256modm b, const bignum256modm c)
     CLIB.mulsub256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm, tt.bignum256modm, tt.bignum256modm]
+    
+    # void muladd256_modm(bignum256modm r, const bignum256modm a, const bignum256modm b, const bignum256modm c)
     CLIB.muladd256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm, tt.bignum256modm, tt.bignum256modm]
+    
+    # void curve25519_set(bignum25519 r, uint32_t x)
     CLIB.curve25519_set.argtypes = [tt.bignum25519, tt.uint32_t]
+    
+    # void curve25519_set_d(bignum25519 r)
     CLIB.curve25519_set_d.argtypes = [tt.bignum25519]
+    
+    # void curve25519_set_2d(bignum25519 r)
     CLIB.curve25519_set_2d.argtypes = [tt.bignum25519]
+    
+    # void curve25519_set_sqrtneg1(bignum25519 r)
     CLIB.curve25519_set_sqrtneg1.argtypes = [tt.bignum25519]
+    
+    # int curve25519_isnegative(const bignum25519 f)
     CLIB.curve25519_isnegative.argtypes = [tt.bignum25519]
     CLIB.curve25519_isnegative.restype = ct.c_int
+    
+    # int curve25519_isnonzero(const bignum25519 f)
     CLIB.curve25519_isnonzero.argtypes = [tt.bignum25519]
     CLIB.curve25519_isnonzero.restype = ct.c_int
+    
+    # void curve25519_reduce(bignum25519 r, const bignum25519 in)
     CLIB.curve25519_reduce.argtypes = [tt.bignum25519, tt.bignum25519]
+    
+    # void curve25519_expand_reduce(bignum25519 out, const char in[32])
     CLIB.curve25519_expand_reduce.argtypes = [tt.bignum25519, ct.c_ubyte * 32]
+    
+    # int ge25519_check(const ge25519 *r)
     CLIB.ge25519_check.argtypes = [tt.POINTER(tt.ge25519)]
     CLIB.ge25519_check.restype = ct.c_int
+    
+    # int ge25519_fromfe_check(const ge25519 *r)
     CLIB.ge25519_fromfe_check.argtypes = [tt.POINTER(tt.ge25519)]
     CLIB.ge25519_fromfe_check.restype = ct.c_int
+    
+    # int ge25519_eq(const ge25519 *a, const ge25519 *b)
     CLIB.ge25519_eq.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519)]
     CLIB.ge25519_eq.restype = ct.c_int
+    
+    # void ge25519_copy(ge25519 *dst, const ge25519 *src)
     CLIB.ge25519_copy.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_set_base(ge25519 *r)
     CLIB.ge25519_set_base.argtypes = [tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_mul8(ge25519 *r, const ge25519 *t)
     CLIB.ge25519_mul8.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_neg_partial(ge25519 *r)
     CLIB.ge25519_neg_partial.argtypes = [tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_neg_full(ge25519 *r)
     CLIB.ge25519_neg_full.argtypes = [tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_reduce(ge25519 *r, const ge25519 *t)
     CLIB.ge25519_reduce.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_norm(ge25519 *r, const ge25519 *t)
     CLIB.ge25519_norm.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519)]
+    
+    # void ge25519_add(ge25519 *r, const ge25519 *a, const ge25519 *b, char signbit)
     CLIB.ge25519_add.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519), ct.c_ubyte]
+    
+    # void ge25519_fromfe_frombytes_vartime(ge25519 *r, const char *s)
     CLIB.ge25519_fromfe_frombytes_vartime.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(ct.c_ubyte)]
+    
+    # int ge25519_unpack_vartime(ge25519 *r, const char *s)
     CLIB.ge25519_unpack_vartime.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(ct.c_ubyte)]
     CLIB.ge25519_unpack_vartime.restype = ct.c_int
+    
+    # void ge25519_scalarmult_base_wrapper(ge25519 *r, const bignum256modm s)
     CLIB.ge25519_scalarmult_base_wrapper.argtypes = [tt.POINTER(tt.ge25519), tt.bignum256modm]
+    
+    # void ge25519_scalarmult_wrapper(ge25519 *r, const ge25519 *P, const bignum256modm a)
     CLIB.ge25519_scalarmult_wrapper.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519), tt.bignum256modm]
+    
+    # int xmr_size_varint(uint64_t num)
     CLIB.xmr_size_varint.argtypes = [tt.uint64_t]
     CLIB.xmr_size_varint.restype = ct.c_int
+    
+    # int xmr_write_varint(uint8_t *buff, size_t buff_size, uint64_t num)
     CLIB.xmr_write_varint.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.uint64_t]
     CLIB.xmr_write_varint.restype = ct.c_int
+    
+    # int xmr_read_varint(uint8_t *buff, size_t buff_size, uint64_t *val)
     CLIB.xmr_read_varint.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(tt.uint64_t)]
     CLIB.xmr_read_varint.restype = ct.c_int
+    
+    # void ge25519_set_xmr_h(ge25519 *r)
     CLIB.ge25519_set_xmr_h.argtypes = [tt.POINTER(tt.ge25519)]
+    
+    # void xmr_random_scalar(bignum256modm m)
     CLIB.xmr_random_scalar.argtypes = [tt.bignum256modm]
+    
+    # void xmr_fast_hash(uint8_t *hash, const void *data, size_t length)
     CLIB.xmr_fast_hash.argtypes = [tt.POINTER(tt.uint8_t), ct.c_void_p, tt.size_t]
+    
+    # void xmr_hasher_init(Hasher *hasher)
     CLIB.xmr_hasher_init.argtypes = [tt.POINTER(tt.Hasher)]
+    
+    # void xmr_hasher_update(Hasher *hasher, const void *data, size_t length)
     CLIB.xmr_hasher_update.argtypes = [tt.POINTER(tt.Hasher), ct.c_void_p, tt.size_t]
+    
+    # void xmr_hasher_final(Hasher *hasher, uint8_t *hash)
     CLIB.xmr_hasher_final.argtypes = [tt.POINTER(tt.Hasher), tt.POINTER(tt.uint8_t)]
+    
+    # void xmr_hasher_copy(Hasher *dst, const Hasher *src)
     CLIB.xmr_hasher_copy.argtypes = [tt.POINTER(tt.Hasher), tt.POINTER(tt.Hasher)]
+    
+    # void xmr_hash_to_scalar(bignum256modm r, const void *data, size_t length)
     CLIB.xmr_hash_to_scalar.argtypes = [tt.bignum256modm, ct.c_void_p, tt.size_t]
+    
+    # void xmr_hash_to_ec(ge25519 *P, const void *data, size_t length)
     CLIB.xmr_hash_to_ec.argtypes = [tt.POINTER(tt.ge25519), ct.c_void_p, tt.size_t]
+    
+    # void xmr_derivation_to_scalar(bignum256modm s, const ge25519 *p, uint32_t output_index)
     CLIB.xmr_derivation_to_scalar.argtypes = [tt.bignum256modm, tt.POINTER(tt.ge25519), tt.uint32_t]
+    
+    # void xmr_generate_key_derivation(ge25519 *r, const ge25519 *A, const bignum256modm b)
     CLIB.xmr_generate_key_derivation.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519), tt.bignum256modm]
+    
+    # void xmr_derive_private_key(bignum256modm s, const ge25519 *deriv, uint32_t idx, const bignum256modm base)
     CLIB.xmr_derive_private_key.argtypes = [tt.bignum256modm, tt.POINTER(tt.ge25519), tt.uint32_t, tt.bignum256modm]
+    
+    # void xmr_derive_public_key(ge25519 *r, const ge25519 *deriv, uint32_t idx, const ge25519 *base)
     CLIB.xmr_derive_public_key.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519), tt.uint32_t, tt.POINTER(tt.ge25519)]
+    
+    # void xmr_add_keys2(ge25519 *r, const bignum256modm a, const bignum256modm b, const ge25519 *B)
     CLIB.xmr_add_keys2.argtypes = [tt.POINTER(tt.ge25519), tt.bignum256modm, tt.bignum256modm, tt.POINTER(tt.ge25519)]
+    
+    # void xmr_add_keys2_vartime(ge25519 *r, const bignum256modm a, const bignum256modm b, const ge25519 *B)
     CLIB.xmr_add_keys2_vartime.argtypes = [tt.POINTER(tt.ge25519), tt.bignum256modm, tt.bignum256modm, tt.POINTER(tt.ge25519)]
+    
+    # void xmr_add_keys3(ge25519 *r, const bignum256modm a, const ge25519 *A, const bignum256modm b, const ge25519 *B)
     CLIB.xmr_add_keys3.argtypes = [tt.POINTER(tt.ge25519), tt.bignum256modm, tt.POINTER(tt.ge25519), tt.bignum256modm, tt.POINTER(tt.ge25519)]
+    
+    # void xmr_add_keys3_vartime(ge25519 *r, const bignum256modm a, const ge25519 *A, const bignum256modm b, const ge25519 *B)
     CLIB.xmr_add_keys3_vartime.argtypes = [tt.POINTER(tt.ge25519), tt.bignum256modm, tt.POINTER(tt.ge25519), tt.bignum256modm, tt.POINTER(tt.ge25519)]
+    
+    # void xmr_get_subaddress_secret_key(bignum256modm r, uint32_t major, uint32_t minor, const bignum256modm m)
     CLIB.xmr_get_subaddress_secret_key.argtypes = [tt.bignum256modm, tt.uint32_t, tt.uint32_t, tt.bignum256modm]
+    
+    # void xmr_gen_c(ge25519 *r, const bignum256modm a, uint64_t amount)
     CLIB.xmr_gen_c.argtypes = [tt.POINTER(tt.ge25519), tt.bignum256modm, tt.uint64_t]
+    
+    # void xmr_gen_range_sig(xmr_range_sig_t *sig, ge25519 *C, bignum256modm mask, xmr_amount amount, bignum256modm *last_mask)
     CLIB.xmr_gen_range_sig.argtypes = [tt.POINTER(tt.xmr_range_sig_t), tt.POINTER(tt.ge25519), tt.bignum256modm, tt.xmr_amount, tt.POINTER(tt.bignum256modm)]
 
 
@@ -2367,14 +2817,12 @@ def xmr_gen_range_sig(sig, C, mask, amount, last_mask):
     CLIB.xmr_gen_range_sig(ct.byref(sig), ct.byref(C), mask, amount, ct.byref(last_mask))
 
 
-def xmr_gen_range_sig_r(): 
+def xmr_gen_range_sig_r(amount, last_mask): 
     sig = (tt.xmr_range_sig_t)()
     C = (tt.ge25519)()
     mask = (tt.bignum256modm)()
-    amount = (tt.xmr_amount)()
-    last_mask = (tt.bignum256modm)()
     CLIB.xmr_gen_range_sig(ct.byref(sig), ct.byref(C), mask, amount, ct.byref(last_mask))
-    return sig, C, mask, amount, last_mask
+    return sig, C, mask
 
 
 
