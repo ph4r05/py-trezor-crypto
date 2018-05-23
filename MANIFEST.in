@@ -5,6 +5,7 @@ include *.md
 include src/*
 include tools/*
 include data/*
+include trezor_crypto_tests/*
 graft src
 graft tools
 graft data
