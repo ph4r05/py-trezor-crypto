@@ -357,3 +357,17 @@ void xmr_add_keys3(ge25519 *r, const bignum256modm a, const ge25519 *A, const bi
 void xmr_add_keys3_vartime(ge25519 *r, const bignum256modm a, const ge25519 *A, const bignum256modm b, const ge25519 *B);
 void xmr_get_subaddress_secret_key(bignum256modm r, uint32_t major, uint32_t minor, const bignum256modm m);
 void xmr_gen_c(ge25519 *r, const bignum256modm a, uint64_t amount);
+typedef uint64_t xmr_amount;
+typedef xmr_key_t xmr_key64_t[64];
+typedef struct xmr_boro_sig
+{
+  xmr_key64_t s0;
+  xmr_key64_t s1;
+  xmr_key_t ee;
+} xmr_boro_sig_t;
+typedef struct range_sig
+{
+  xmr_boro_sig_t asig;
+  xmr_key64_t Ci;
+} xmr_range_sig_t;
+void xmr_gen_range_sig(xmr_range_sig_t *sig, ge25519 *C, bignum256modm mask, xmr_amount amount, bignum256modm *last_mask);
