@@ -73,6 +73,7 @@ FUNCS_PARAMS = [
     FuncCodeGenPar('groestl512_Init'),
     FuncCodeGenPar('groestl512_Update'),
     FuncCodeGenPar('groestl512_Final'),
+    FuncCodeGenPar('xmr_gen_range_sig', [0, 1, 2]),
 ]
 
 
@@ -803,6 +804,11 @@ def ctypes_functions():
             code_pars = self.code_pars[node.name]  # type: FuncCodeGenPar
 
             # Ctype code gen
+            generator = c_generator.CGenerator()
+            genc = generator.visit(node)
+            self.defs_clib.append('')
+            self.defs_clib.append('# %s' % genc)
+
             arg_list = ', '.join([x.ct for x in args if x and not x.is_void()])
             cdef = 'CLIB.%s.argtypes = [%s]' % (node.name, arg_list)
             self.defs_clib.append(cdef)
