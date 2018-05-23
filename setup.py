@@ -168,6 +168,9 @@ dev_extras = [
     'pympler',
     'pypandoc',
     'pandoc',
+    'pycparser',
+    'ctypeslib2',
+    'shlib',
 ]
 
 docs_extras = [
@@ -200,7 +203,7 @@ setup(
     ext_modules=extensions,
     setup_requires=['cffi >= 1.1'],
     cffi_modules=[os.path.join(setup_dir, 'trezor_crypto', 'cffi_build.py') + ':ffi'],
-    install_requires=['cffi >= 1.1', 'cython >= 0.23', 'shlib', 'ctypeslib2', 'pycparser'],
+    install_requires=['cffi >= 1.1', 'shlib', 'ctypeslib2', 'pycparser'],
     tests_require=['pytest >= 2.7.3'],
     cmdclass={
         'test': PyTest,
