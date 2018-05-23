@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import ctypes as ct
+from .trezor_ctypes import *
 from .trezor_cfunc_gen import *
 
 
@@ -8,6 +9,12 @@ def random_buffer_r(sz):
     buff = (ct.c_uint8 * sz)()
     cl().random_buffer(buff, sz)
     return bytes(buff)
+
+
+def init256_modm_r(a):
+    r = tt.MODM()
+    cl().set256_modm(r, ct.c_uint64(a))
+    return r
 
 
 def get256_modm_r(a):
@@ -25,8 +32,14 @@ def expand256_modm(r, buff):
 
 def expand256_modm_r(buff):
     m = tt.MODM()
-    cl().expand256_modm(m, bytes(buff), len(buff))
+    cl().expand256_modm(m, buff, len(buff))
     return m
+
+
+def curve25519_clone(a):
+    r = tt.Ge25519()
+    cl().curve25519_copy(r, a)
+    return r
 
 
 def ge25519_unpack_vartime_r(buff):
@@ -40,31 +53,31 @@ def ge25519_unpack_vartime_r(buff):
 
 def xmr_fast_hash_r(a):
     r = tt.KEY_BUFF()
-    cl().xmr_fast_hash(r, bytes(a), len(a))
+    cl().xmr_fast_hash(r, a, len(a))
     return bytes(r)
 
 
 def xmr_hasher_update(h, buff):
-    cl().xmr_hasher_update(ct.byref(h), bytes(buff), len(buff))
+    cl().xmr_hasher_update(ct.byref(h), buff, len(buff))
 
 
 def xmr_hash_to_scalar(r, a):
-    return cl().xmr_hash_to_scalar(r, bytes(a), len(a))
+    return cl().xmr_hash_to_scalar(r, a, len(a))
 
 
 def xmr_hash_to_scalar_r(a):
     r = tt.MODM()
-    cl().xmr_hash_to_scalar(r, bytes(a), len(a))
+    cl().xmr_hash_to_scalar(r, a, len(a))
     return r
 
 
 def xmr_hash_to_ec(r, a):
-    return cl().xmr_hash_to_ec(ct.byref(r), bytes(a), len(a))
+    return cl().xmr_hash_to_ec(ct.byref(r), a, len(a))
 
 
 def xmr_hash_to_ec_r(a):
     r = tt.Ge25519()
-    cl().xmr_hash_to_ec(ct.byref(r), bytes(a), len(a))
+    cl().xmr_hash_to_ec(ct.byref(r), a, len(a))
     return r
 
 

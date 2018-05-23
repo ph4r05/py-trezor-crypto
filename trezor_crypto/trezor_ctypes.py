@@ -11,4 +11,19 @@ Ge25519 = ge25519
 Ge25519_niels = ge25519_niels
 Ge25519_pniels = ge25519_pniels
 Ge25519_p1p1 = ge25519_p1p1
+XmrRangeSig = xmr_range_sig_t
+XmrAmount = xmr_amount
+
+
+# bignum256modm = MODM
+# bignum25519 = FE
+#
+# ge25519 = Ge25519
+# ge25519_niels = Ge25519_niels
+# ge25519_pniels = Ge25519_pniels
+# ge25519_p1p1 = Ge25519_p1p1
+
+
+
+
 
