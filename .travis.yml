@@ -1,0 +1,36 @@
+language: python
+sudo: false
+dist: trusty
+
+compiler:
+  - clang
+  - gcc
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - check
+    - libssl-dev
+    - python3-pip
+    - valgrind
+    - gcc-5
+    - libc++-dev
+
+cache:
+  directories:
+  - $HOME/libsodium
+
+python:
+  - "3.5"
+  - "3.6"
+  - "pypy3"
+
+install:
+  - ./travis-install-libsodium.sh
+  - pip install .[dev]
+
+#script:
+#  - PYTHONPATH=.:$PYTHONPATH exec ./test-travis.sh
+
