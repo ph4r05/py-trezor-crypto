@@ -348,6 +348,7 @@ def setup_lib(CLIB):
     CLIB.xmr_add_keys3_vartime.argtypes = [tt.POINTER(tt.ge25519), tt.bignum256modm, tt.POINTER(tt.ge25519), tt.bignum256modm, tt.POINTER(tt.ge25519)]
     CLIB.xmr_get_subaddress_secret_key.argtypes = [tt.bignum256modm, tt.uint32_t, tt.uint32_t, tt.bignum256modm]
     CLIB.xmr_gen_c.argtypes = [tt.POINTER(tt.ge25519), tt.bignum256modm, tt.uint64_t]
+    CLIB.xmr_gen_range_sig.argtypes = [tt.POINTER(tt.xmr_range_sig_t), tt.POINTER(tt.ge25519), tt.bignum256modm, tt.xmr_amount, tt.POINTER(tt.bignum256modm)]
 
 
 #
@@ -2247,12 +2248,10 @@ def xmr_hasher_final(hasher, hash):
     CLIB.xmr_hasher_final(ct.byref(hasher), hash)
 
 
-def xmr_hasher_final_r(): 
-    hasher = tt.KEY_BUFF()
-    hash = (tt.uint8_t)()
+def xmr_hasher_final_r(hasher): 
+    hash = tt.KEY_BUFF()
     CLIB.xmr_hasher_final(ct.byref(hasher), hash)
-    return hasher, bytes(hash)
-
+    return bytes(hash)
 
 def xmr_hasher_copy(dst, src): 
     CLIB.xmr_hasher_copy(ct.byref(dst), ct.byref(src))
@@ -2362,6 +2361,20 @@ def xmr_gen_c_r(a, amount):
     r = (tt.ge25519)()
     CLIB.xmr_gen_c(ct.byref(r), a, amount)
     return r
+
+
+def xmr_gen_range_sig(sig, C, mask, amount, last_mask): 
+    CLIB.xmr_gen_range_sig(ct.byref(sig), ct.byref(C), mask, amount, ct.byref(last_mask))
+
+
+def xmr_gen_range_sig_r(): 
+    sig = (tt.xmr_range_sig_t)()
+    C = (tt.ge25519)()
+    mask = (tt.bignum256modm)()
+    amount = (tt.xmr_amount)()
+    last_mask = (tt.bignum256modm)()
+    CLIB.xmr_gen_range_sig(ct.byref(sig), ct.byref(C), mask, amount, ct.byref(last_mask))
+    return sig, C, mask, amount, last_mask
 
 
 
