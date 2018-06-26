@@ -111,13 +111,17 @@ def get_function_codegen_params():
 def get_main_header():
     # root header file to process - including all components for the module
     tpl = '''
+#include <address.h>
+#include <base32.h>
+#include <base58.h>
 #include <rand.h>
 #include <hasher.h>
 #include <hmac.h>
 #include <pbkdf2.h>
 #include <bignum.h>
-#include <base32.h>
-#include <base58.h>
+
+#include <chacha20poly1305/chacha20poly1305.h>
+#include <chacha20poly1305/rfc7539.h>
 #include <monero/monero.h>
             '''
     return tpl
@@ -579,6 +583,7 @@ def main_cffi():
 
     c_files = glob.glob(os.path.join(base_dir, "*.c")) \
               + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.c")) \
+              + glob.glob(os.path.join(os.path.join(base_dir, 'chacha20poly1305'), "*.c")) \
               + glob.glob(os.path.join(os.path.join(base_dir, 'ed25519-donna'), "*.c"))\
               + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.c"))
 
@@ -887,6 +892,8 @@ def ctypes_functions():
             if code_pars is None or not code_pars.no_ctr:
                 self.defs_fnc.append(tpl)
 
+            # TODO: CFFI wrapper
+
     # quick hack for sizeof
     to_parse = replace_sizeofs(to_parse)
     ast = parser.parse(to_parse, debuglevel=0)
@@ -935,6 +942,7 @@ def ctypes_gen(includes=None, use_fake_libs=False, debug=False):
                + ['src/ed25519-donna/curve25519-donna-32bit.h', ] \
                + ['src/ed25519-donna/modm-donna-32bit.h', ] \
                + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.h")) \
+               + glob.glob(os.path.join(os.path.join(base_dir, 'chacha20poly1305'), "*.h")) \
                + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.h"))
 
     args = [

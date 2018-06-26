@@ -116,6 +116,7 @@ setup_dir = os.path.abspath(os.path.dirname(__file__))
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'src'))
 CPPS = glob.glob(os.path.join(base_dir, "*.c")) \
           + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.c")) \
+          + glob.glob(os.path.join(os.path.join(base_dir, 'chacha20poly1305'), "*.c"))\
           + glob.glob(os.path.join(os.path.join(base_dir, 'ed25519-donna'), "*.c"))\
           + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.c"))
 
