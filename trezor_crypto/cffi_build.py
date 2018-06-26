@@ -135,8 +135,10 @@ def get_basedir():
 
 
 def get_fake_libs():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                        '../tools/pycparser/utils/fake_libc_include'))
+    return [
+        os.path.abspath(os.path.join(os.path.dirname(__file__), '../tools/pycparser/utils/fake_libc_include')),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), '../tools/fake_includes')),
+    ]
 
 
 def get_package_file_path(name):
@@ -188,6 +190,21 @@ def remove_files(files, blacklist):
         if is_ok:
             nheaders.append(h)
     return nheaders
+
+
+def ensure_list(x):
+    return x if isinstance(x, list) else [x]
+
+
+def gen_c(node):
+    try:
+        generator = c_generator.CGenerator()
+        genc = generator.visit(node)
+        return genc
+
+    except Exception as e:
+        logger.warning('Coult not generate code for: %s' % node)
+    return None
 
 
 def pkg_config(args):
@@ -267,13 +284,18 @@ def preprocess(headers, compiler=None, use_fake_libs=True):
     fake_libs = 'src'
     if use_fake_libs:
         fake_libs = get_fake_libs()
+    fake_libs = ensure_list(fake_libs)
 
-    args = ['-nostdinc',
-            '-E',
-            '-D__attribute__(x)=',
-            '-I%s' % fake_libs,
-            '-Isrc/',
-            ] + get_compile_args()
+    args = [
+               '-nostdinc',
+               '-E',
+               '-D__attribute__(x)=',
+           ] + \
+           [
+               '-I%s' % x for x in fake_libs] + \
+           [
+               '-Isrc/',
+           ] + get_compile_args()
 
     try:
         p = subprocess.Popen([compiler] + args + headers, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
