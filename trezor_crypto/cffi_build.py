@@ -932,6 +932,8 @@ def ctypes_gen(includes=None, use_fake_libs=False, debug=False):
     base_dir = 'src'
     h_files = glob.glob(os.path.join(base_dir, "*.h")) \
                + ['src/ed25519-donna/ed25519-donna.h', ] \
+               + ['src/ed25519-donna/curve25519-donna-32bit.h', ] \
+               + ['src/ed25519-donna/modm-donna-32bit.h', ] \
                + glob.glob(os.path.join(os.path.join(base_dir, 'aes'), "*.h")) \
                + glob.glob(os.path.join(os.path.join(base_dir, 'monero'), "*.h"))
 
