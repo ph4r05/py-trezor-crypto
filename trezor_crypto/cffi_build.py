@@ -45,6 +45,11 @@ INT_TYPES = [
 ]
 
 
+CODE_CONSTS = {
+    'BLAKE2B_BLOCKBYTES': 128,
+}
+
+
 class FuncCodeGenPar(object):
     def __init__(self, name, opars=None, out_inits=None, out_rets=None, ret_ov=None, no_ct=False, no_ctr=False):
         self.name = name
@@ -432,8 +437,10 @@ def eval_ast(node):
             raise ValueError('Unknown op: %s' % node.op)
     elif isinstance(node, c_ast.Constant):
         return int(node.value)
+    elif isinstance(node, c_ast.ID) and node.name in CODE_CONSTS:
+        return CODE_CONSTS[node.name]
     else:
-        raise ValueError('Unknown node: %s' % node)
+        raise ValueError('Unknown node: %s, code: %s' % (node, gen_c(node)))
 
 
 class ArrayEval(c_ast.NodeVisitor):
