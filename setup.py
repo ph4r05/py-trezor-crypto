@@ -183,7 +183,7 @@ docs_extras = [
 
 setup(
     name='py_trezor_crypto_ph4',
-    version='0.0.6',
+    version='0.0.7',
     description='Trezor-crypto python binding',
     long_description=long_description,
     url='https://github.com/ph4r05/py-trezor-crypto',
