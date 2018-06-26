@@ -1,8 +1,13 @@
-uint32_t random32(void);
-void random_buffer(uint8_t *buf, size_t len);
-uint32_t random_uniform(uint32_t n);
-void random_permute(char *buf, size_t len);
-int random_init(void);
+size_t address_prefix_bytes_len(uint32_t address_type);
+void address_write_prefix_bytes(uint32_t address_type, uint8_t *out);
+bool address_check_prefix(const uint8_t *addr, uint32_t address_type);
+extern const char *BASE32_ALPHABET_RFC4648;
+char *base32_encode(const uint8_t *in, size_t inlen, char *out, size_t outlen, const char *alphabet);
+void base32_encode_unsafe(const uint8_t *in, size_t inlen, uint8_t *out);
+uint8_t *base32_decode(const char *in, size_t inlen, uint8_t *out, size_t outlen, const char *alphabet);
+bool base32_decode_unsafe(const uint8_t *in, size_t inlen, uint8_t *out, const char *alphabet);
+size_t base32_encoded_length(size_t inlen);
+size_t base32_decoded_length(size_t inlen);
 typedef struct _SHA1_CTX
 {
   uint32_t state[5];
@@ -91,7 +96,25 @@ void groestl512_Init(void *cc);
 void groestl512_Update(void *cc, const void *data, size_t len);
 void groestl512_Final(void *cc, void *dst);
 void groestl512_DoubleTrunc(void *cc, void *dst);
-typedef enum {HASHER_SHA2, HASHER_BLAKE, HASHER_SHA2D, HASHER_BLAKED, HASHER_GROESTLD_TRUNC, HASHER_SHA3, HASHER_SHA3K} HasherType;
+enum blake2b_constant {BLAKE2B_BLOCKBYTES = 128, BLAKE2B_OUTBYTES = 64, BLAKE2B_KEYBYTES = 64, BLAKE2B_SALTBYTES = 16, BLAKE2B_PERSONALBYTES = 16};
+typedef struct __blake2b_state
+{
+  uint64_t h[8];
+  uint64_t t[2];
+  uint64_t f[2];
+  uint8_t buf[128];
+  size_t buflen;
+  size_t outlen;
+  uint8_t last_node;
+} blake2b_state;
+int blake2b_Init(blake2b_state *S, size_t outlen);
+int blake2b_InitKey(blake2b_state *S, size_t outlen, const void *key, size_t keylen);
+int blake2b_InitPersonal(blake2b_state *S, size_t outlen, const void *personal, size_t personal_len);
+int blake2b_Update(blake2b_state *S, const void *pin, size_t inlen);
+int blake2b_Final(blake2b_state *S, void *out, size_t outlen);
+int blake2b(const uint8_t *msg, uint32_t msg_len, void *out, size_t outlen);
+int blake2b_Key(const uint8_t *msg, uint32_t msg_len, const void *key, size_t keylen, void *out, size_t outlen);
+typedef enum {HASHER_SHA2, HASHER_BLAKE, HASHER_SHA2D, HASHER_BLAKED, HASHER_GROESTLD_TRUNC, HASHER_SHA3, HASHER_SHA3K, HASHER_OVERWINTER_PREVOUTS, HASHER_OVERWINTER_SEQUENCE, HASHER_OVERWINTER_OUTPUTS, HASHER_OVERWINTER_PREIMAGE} HasherType;
 typedef struct 
 {
   HasherType type;
@@ -101,6 +124,7 @@ typedef struct
     SHA3_CTX sha3;
     BLAKE256_CTX blake;
     GROESTL512_CTX groestl;
+    blake2b_state blake2b;
   } ctx;
 } Hasher;
 void hasher_Init(Hasher *hasher, HasherType type);
@@ -108,6 +132,16 @@ void hasher_Reset(Hasher *hasher);
 void hasher_Update(Hasher *hasher, const uint8_t *data, size_t length);
 void hasher_Final(Hasher *hasher, uint8_t hash[32]);
 void hasher_Raw(HasherType type, const uint8_t *data, size_t length, uint8_t hash[32]);
+int base58_encode_check(const uint8_t *data, int len, HasherType hasher_type, char *str, int strsize);
+int base58_decode_check(const char *str, HasherType hasher_type, uint8_t *data, int datalen);
+bool b58tobin(void *bin, size_t *binszp, const char *b58);
+int b58check(const void *bin, size_t binsz, HasherType hasher_type, const char *base58str);
+bool b58enc(char *b58, size_t *b58sz, const void *data, size_t binsz);
+uint32_t random32(void);
+void random_buffer(uint8_t *buf, size_t len);
+uint32_t random_uniform(uint32_t n);
+void random_permute(char *buf, size_t len);
+int random_init(void);
 typedef struct _HMAC_SHA256_CTX
 {
   uint8_t o_key_pad[64];
@@ -197,18 +231,48 @@ void bn_subtract(const bignum256 *a, const bignum256 *b, bignum256 *res);
 void bn_divmod58(bignum256 *a, uint32_t *r);
 void bn_divmod1000(bignum256 *a, uint32_t *r);
 size_t bn_format(const bignum256 *amnt, const char *prefix, const char *suffix, unsigned int decimals, int exponent, bool trailing, char *out, size_t outlen);
-extern const char *BASE32_ALPHABET_RFC4648;
-char *base32_encode(const uint8_t *in, size_t inlen, char *out, size_t outlen, const char *alphabet);
-void base32_encode_unsafe(const uint8_t *in, size_t inlen, uint8_t *out);
-uint8_t *base32_decode(const char *in, size_t inlen, uint8_t *out, size_t outlen, const char *alphabet);
-bool base32_decode_unsafe(const uint8_t *in, size_t inlen, uint8_t *out, const char *alphabet);
-size_t base32_encoded_length(size_t inlen);
-size_t base32_decoded_length(size_t inlen);
-int base58_encode_check(const uint8_t *data, int len, HasherType hasher_type, char *str, int strsize);
-int base58_decode_check(const char *str, HasherType hasher_type, uint8_t *data, int datalen);
-bool b58tobin(void *bin, size_t *binszp, const char *b58);
-int b58check(const void *bin, size_t binsz, HasherType hasher_type, const char *base58str);
-bool b58enc(char *b58, size_t *b58sz, const void *data, size_t binsz);
+typedef signed char s8;
+typedef unsigned char u8;
+typedef signed short s16;
+typedef unsigned short u16;
+typedef signed int s32;
+typedef unsigned int u32;
+typedef signed long long s64;
+typedef unsigned long long u64;
+typedef struct 
+{
+  u32 input[16];
+} ECRYPT_ctx;
+void ECRYPT_init(void);
+void ECRYPT_keysetup(ECRYPT_ctx *ctx, const u8 *key, u32 keysize, u32 ivsize);
+void ECRYPT_ivsetup(ECRYPT_ctx *ctx, const u8 *iv);
+void ECRYPT_encrypt_bytes(ECRYPT_ctx *ctx, const u8 *plaintext, u8 *ciphertext, u32 msglen);
+void ECRYPT_decrypt_bytes(ECRYPT_ctx *ctx, const u8 *ciphertext, u8 *plaintext, u32 msglen);
+void ECRYPT_keystream_bytes(ECRYPT_ctx *ctx, u8 *keystream, u32 length);
+typedef struct poly1305_context
+{
+  size_t aligner;
+  unsigned char opaque[136];
+} poly1305_context;
+void poly1305_init(poly1305_context *ctx, const unsigned char key[32]);
+void poly1305_update(poly1305_context *ctx, const unsigned char *m, size_t bytes);
+void poly1305_finish(poly1305_context *ctx, unsigned char mac[16]);
+void poly1305_auth(unsigned char mac[16], const unsigned char *m, size_t bytes, const unsigned char key[32]);
+int poly1305_verify(const unsigned char mac1[16], const unsigned char mac2[16]);
+int poly1305_power_on_self_test(void);
+typedef struct 
+{
+  ECRYPT_ctx chacha20;
+  poly1305_context poly1305;
+} chacha20poly1305_ctx;
+void xchacha20poly1305_init(chacha20poly1305_ctx *ctx, uint8_t key[32], uint8_t nonce[24]);
+void chacha20poly1305_encrypt(chacha20poly1305_ctx *ctx, uint8_t *in, uint8_t *out, size_t n);
+void chacha20poly1305_decrypt(chacha20poly1305_ctx *ctx, uint8_t *in, uint8_t *out, size_t n);
+void chacha20poly1305_auth(chacha20poly1305_ctx *ctx, uint8_t *in, size_t n);
+void chacha20poly1305_finish(chacha20poly1305_ctx *ctx, uint8_t mac[16]);
+void rfc7539_init(chacha20poly1305_ctx *ctx, uint8_t key[32], uint8_t nonce[12]);
+void rfc7539_auth(chacha20poly1305_ctx *ctx, uint8_t *in, size_t n);
+void rfc7539_finish(chacha20poly1305_ctx *ctx, int64_t alen, int64_t plen, uint8_t mac[16]);
 int xmr_base58_addr_encode_check(uint64_t tag, const uint8_t *data, size_t binsz, char *b58, size_t b58sz);
 int xmr_base58_addr_decode_check(const char *addr, size_t sz, uint64_t *tag, void *data, size_t datalen);
 bool xmr_base58_encode(char *b58, size_t *b58sz, const void *data, size_t binsz);

@@ -77,23 +77,39 @@ def setup_lib(CLIB):
     :return:
     """
     
-    # uint32_t random32(void)
-    CLIB.random32.argtypes = []
-    CLIB.random32.restype = tt.uint32_t
+    # size_t address_prefix_bytes_len(uint32_t address_type)
+    CLIB.address_prefix_bytes_len.argtypes = [tt.uint32_t]
+    CLIB.address_prefix_bytes_len.restype = tt.size_t
     
-    # void random_buffer(uint8_t *buf, size_t len)
-    CLIB.random_buffer.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t]
+    # void address_write_prefix_bytes(uint32_t address_type, uint8_t *out)
+    CLIB.address_write_prefix_bytes.argtypes = [tt.uint32_t, tt.POINTER(tt.uint8_t)]
     
-    # uint32_t random_uniform(uint32_t n)
-    CLIB.random_uniform.argtypes = [tt.uint32_t]
-    CLIB.random_uniform.restype = tt.uint32_t
+    # bool address_check_prefix(const uint8_t *addr, uint32_t address_type)
+    CLIB.address_check_prefix.argtypes = [tt.POINTER(tt.uint8_t), tt.uint32_t]
+    CLIB.address_check_prefix.restype = ct.c_bool
     
-    # void random_permute(char *buf, size_t len)
-    CLIB.random_permute.argtypes = [tt.POINTER(ct.c_byte), tt.size_t]
+    # char *base32_encode(const uint8_t *in, size_t inlen, char *out, size_t outlen, const char *alphabet)
+    CLIB.base32_encode.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(ct.c_byte), tt.size_t, tt.POINTER(ct.c_byte)]
+    CLIB.base32_encode.restype = tt.POINTER(ct.c_byte)
     
-    # int random_init(void)
-    CLIB.random_init.argtypes = []
-    CLIB.random_init.restype = ct.c_int
+    # void base32_encode_unsafe(const uint8_t *in, size_t inlen, uint8_t *out)
+    CLIB.base32_encode_unsafe.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(tt.uint8_t)]
+    
+    # uint8_t *base32_decode(const char *in, size_t inlen, uint8_t *out, size_t outlen, const char *alphabet)
+    CLIB.base32_decode.argtypes = [tt.POINTER(ct.c_byte), tt.size_t, tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(ct.c_byte)]
+    CLIB.base32_decode.restype = tt.POINTER(tt.uint8_t)
+    
+    # bool base32_decode_unsafe(const uint8_t *in, size_t inlen, uint8_t *out, const char *alphabet)
+    CLIB.base32_decode_unsafe.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(tt.uint8_t), tt.POINTER(ct.c_byte)]
+    CLIB.base32_decode_unsafe.restype = ct.c_bool
+    
+    # size_t base32_encoded_length(size_t inlen)
+    CLIB.base32_encoded_length.argtypes = [tt.size_t]
+    CLIB.base32_encoded_length.restype = tt.size_t
+    
+    # size_t base32_decoded_length(size_t inlen)
+    CLIB.base32_decoded_length.argtypes = [tt.size_t]
+    CLIB.base32_decoded_length.restype = tt.size_t
     
     # void sha1_Transform(const uint32_t *state_in, const uint32_t *data, uint32_t *state_out)
     CLIB.sha1_Transform.argtypes = [tt.POINTER(tt.uint32_t), tt.POINTER(tt.uint32_t), tt.POINTER(tt.uint32_t)]
@@ -221,6 +237,34 @@ def setup_lib(CLIB):
     # void groestl512_DoubleTrunc(void *cc, void *dst)
     CLIB.groestl512_DoubleTrunc.argtypes = [ct.c_void_p, ct.c_void_p]
     
+    # int blake2b_Init(blake2b_state *S, size_t outlen)
+    CLIB.blake2b_Init.argtypes = [tt.POINTER(tt.blake2b_state), tt.size_t]
+    CLIB.blake2b_Init.restype = ct.c_int
+    
+    # int blake2b_InitKey(blake2b_state *S, size_t outlen, const void *key, size_t keylen)
+    CLIB.blake2b_InitKey.argtypes = [tt.POINTER(tt.blake2b_state), tt.size_t, ct.c_void_p, tt.size_t]
+    CLIB.blake2b_InitKey.restype = ct.c_int
+    
+    # int blake2b_InitPersonal(blake2b_state *S, size_t outlen, const void *personal, size_t personal_len)
+    CLIB.blake2b_InitPersonal.argtypes = [tt.POINTER(tt.blake2b_state), tt.size_t, ct.c_void_p, tt.size_t]
+    CLIB.blake2b_InitPersonal.restype = ct.c_int
+    
+    # int blake2b_Update(blake2b_state *S, const void *pin, size_t inlen)
+    CLIB.blake2b_Update.argtypes = [tt.POINTER(tt.blake2b_state), ct.c_void_p, tt.size_t]
+    CLIB.blake2b_Update.restype = ct.c_int
+    
+    # int blake2b_Final(blake2b_state *S, void *out, size_t outlen)
+    CLIB.blake2b_Final.argtypes = [tt.POINTER(tt.blake2b_state), ct.c_void_p, tt.size_t]
+    CLIB.blake2b_Final.restype = ct.c_int
+    
+    # int blake2b(const uint8_t *msg, uint32_t msg_len, void *out, size_t outlen)
+    CLIB.blake2b.argtypes = [tt.POINTER(tt.uint8_t), tt.uint32_t, ct.c_void_p, tt.size_t]
+    CLIB.blake2b.restype = ct.c_int
+    
+    # int blake2b_Key(const uint8_t *msg, uint32_t msg_len, const void *key, size_t keylen, void *out, size_t outlen)
+    CLIB.blake2b_Key.argtypes = [tt.POINTER(tt.uint8_t), tt.uint32_t, ct.c_void_p, tt.size_t, ct.c_void_p, tt.size_t]
+    CLIB.blake2b_Key.restype = ct.c_int
+    
     # void hasher_Init(Hasher *hasher, HasherType type)
     CLIB.hasher_Init.argtypes = [tt.POINTER(tt.Hasher), tt.HasherType]
     
@@ -235,6 +279,44 @@ def setup_lib(CLIB):
     
     # void hasher_Raw(HasherType type, const uint8_t *data, size_t length, uint8_t hash[32])
     CLIB.hasher_Raw.argtypes = [tt.HasherType, tt.POINTER(tt.uint8_t), tt.size_t, tt.uint8_t * 32]
+    
+    # int base58_encode_check(const uint8_t *data, int len, HasherType hasher_type, char *str, int strsize)
+    CLIB.base58_encode_check.argtypes = [tt.POINTER(tt.uint8_t), ct.c_int, tt.HasherType, tt.POINTER(ct.c_byte), ct.c_int]
+    CLIB.base58_encode_check.restype = ct.c_int
+    
+    # int base58_decode_check(const char *str, HasherType hasher_type, uint8_t *data, int datalen)
+    CLIB.base58_decode_check.argtypes = [tt.POINTER(ct.c_byte), tt.HasherType, tt.POINTER(tt.uint8_t), ct.c_int]
+    CLIB.base58_decode_check.restype = ct.c_int
+    
+    # bool b58tobin(void *bin, size_t *binszp, const char *b58)
+    CLIB.b58tobin.argtypes = [ct.c_void_p, tt.POINTER(tt.size_t), tt.POINTER(ct.c_byte)]
+    CLIB.b58tobin.restype = ct.c_bool
+    
+    # int b58check(const void *bin, size_t binsz, HasherType hasher_type, const char *base58str)
+    CLIB.b58check.argtypes = [ct.c_void_p, tt.size_t, tt.HasherType, tt.POINTER(ct.c_byte)]
+    CLIB.b58check.restype = ct.c_int
+    
+    # bool b58enc(char *b58, size_t *b58sz, const void *data, size_t binsz)
+    CLIB.b58enc.argtypes = [tt.POINTER(ct.c_byte), tt.POINTER(tt.size_t), ct.c_void_p, tt.size_t]
+    CLIB.b58enc.restype = ct.c_bool
+    
+    # uint32_t random32(void)
+    CLIB.random32.argtypes = []
+    CLIB.random32.restype = tt.uint32_t
+    
+    # void random_buffer(uint8_t *buf, size_t len)
+    CLIB.random_buffer.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t]
+    
+    # uint32_t random_uniform(uint32_t n)
+    CLIB.random_uniform.argtypes = [tt.uint32_t]
+    CLIB.random_uniform.restype = tt.uint32_t
+    
+    # void random_permute(char *buf, size_t len)
+    CLIB.random_permute.argtypes = [tt.POINTER(ct.c_byte), tt.size_t]
+    
+    # int random_init(void)
+    CLIB.random_init.argtypes = []
+    CLIB.random_init.restype = ct.c_int
     
     # void hmac_sha256_Init(HMAC_SHA256_CTX *hctx, const uint8_t *key, const uint32_t keylen)
     CLIB.hmac_sha256_Init.argtypes = [tt.POINTER(tt.HMAC_SHA256_CTX), tt.POINTER(tt.uint8_t), tt.uint32_t]
@@ -422,48 +504,67 @@ def setup_lib(CLIB):
     CLIB.bn_format.argtypes = [tt.POINTER(tt.bignum256), tt.POINTER(ct.c_byte), tt.POINTER(ct.c_byte), ct.c_uint, ct.c_int, ct.c_bool, tt.POINTER(ct.c_byte), tt.size_t]
     CLIB.bn_format.restype = tt.size_t
     
-    # char *base32_encode(const uint8_t *in, size_t inlen, char *out, size_t outlen, const char *alphabet)
-    CLIB.base32_encode.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(ct.c_byte), tt.size_t, tt.POINTER(ct.c_byte)]
-    CLIB.base32_encode.restype = tt.POINTER(ct.c_byte)
+    # void ECRYPT_init(void)
+    CLIB.ECRYPT_init.argtypes = []
     
-    # void base32_encode_unsafe(const uint8_t *in, size_t inlen, uint8_t *out)
-    CLIB.base32_encode_unsafe.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(tt.uint8_t)]
+    # void ECRYPT_keysetup(ECRYPT_ctx *ctx, const u8 *key, u32 keysize, u32 ivsize)
+    CLIB.ECRYPT_keysetup.argtypes = [tt.POINTER(tt.ECRYPT_ctx), tt.POINTER(tt.u8), tt.u32, tt.u32]
     
-    # uint8_t *base32_decode(const char *in, size_t inlen, uint8_t *out, size_t outlen, const char *alphabet)
-    CLIB.base32_decode.argtypes = [tt.POINTER(ct.c_byte), tt.size_t, tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(ct.c_byte)]
-    CLIB.base32_decode.restype = tt.POINTER(tt.uint8_t)
+    # void ECRYPT_ivsetup(ECRYPT_ctx *ctx, const u8 *iv)
+    CLIB.ECRYPT_ivsetup.argtypes = [tt.POINTER(tt.ECRYPT_ctx), tt.POINTER(tt.u8)]
     
-    # bool base32_decode_unsafe(const uint8_t *in, size_t inlen, uint8_t *out, const char *alphabet)
-    CLIB.base32_decode_unsafe.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(tt.uint8_t), tt.POINTER(ct.c_byte)]
-    CLIB.base32_decode_unsafe.restype = ct.c_bool
+    # void ECRYPT_encrypt_bytes(ECRYPT_ctx *ctx, const u8 *plaintext, u8 *ciphertext, u32 msglen)
+    CLIB.ECRYPT_encrypt_bytes.argtypes = [tt.POINTER(tt.ECRYPT_ctx), tt.POINTER(tt.u8), tt.POINTER(tt.u8), tt.u32]
     
-    # size_t base32_encoded_length(size_t inlen)
-    CLIB.base32_encoded_length.argtypes = [tt.size_t]
-    CLIB.base32_encoded_length.restype = tt.size_t
+    # void ECRYPT_decrypt_bytes(ECRYPT_ctx *ctx, const u8 *ciphertext, u8 *plaintext, u32 msglen)
+    CLIB.ECRYPT_decrypt_bytes.argtypes = [tt.POINTER(tt.ECRYPT_ctx), tt.POINTER(tt.u8), tt.POINTER(tt.u8), tt.u32]
     
-    # size_t base32_decoded_length(size_t inlen)
-    CLIB.base32_decoded_length.argtypes = [tt.size_t]
-    CLIB.base32_decoded_length.restype = tt.size_t
+    # void ECRYPT_keystream_bytes(ECRYPT_ctx *ctx, u8 *keystream, u32 length)
+    CLIB.ECRYPT_keystream_bytes.argtypes = [tt.POINTER(tt.ECRYPT_ctx), tt.POINTER(tt.u8), tt.u32]
     
-    # int base58_encode_check(const uint8_t *data, int len, HasherType hasher_type, char *str, int strsize)
-    CLIB.base58_encode_check.argtypes = [tt.POINTER(tt.uint8_t), ct.c_int, tt.HasherType, tt.POINTER(ct.c_byte), ct.c_int]
-    CLIB.base58_encode_check.restype = ct.c_int
+    # void poly1305_init(poly1305_context *ctx, const char key[32])
+    CLIB.poly1305_init.argtypes = [tt.POINTER(tt.poly1305_context), ct.c_ubyte * 32]
     
-    # int base58_decode_check(const char *str, HasherType hasher_type, uint8_t *data, int datalen)
-    CLIB.base58_decode_check.argtypes = [tt.POINTER(ct.c_byte), tt.HasherType, tt.POINTER(tt.uint8_t), ct.c_int]
-    CLIB.base58_decode_check.restype = ct.c_int
+    # void poly1305_update(poly1305_context *ctx, const char *m, size_t bytes)
+    CLIB.poly1305_update.argtypes = [tt.POINTER(tt.poly1305_context), tt.POINTER(ct.c_ubyte), tt.size_t]
     
-    # bool b58tobin(void *bin, size_t *binszp, const char *b58)
-    CLIB.b58tobin.argtypes = [ct.c_void_p, tt.POINTER(tt.size_t), tt.POINTER(ct.c_byte)]
-    CLIB.b58tobin.restype = ct.c_bool
+    # void poly1305_finish(poly1305_context *ctx, char mac[16])
+    CLIB.poly1305_finish.argtypes = [tt.POINTER(tt.poly1305_context), ct.c_ubyte * 16]
     
-    # int b58check(const void *bin, size_t binsz, HasherType hasher_type, const char *base58str)
-    CLIB.b58check.argtypes = [ct.c_void_p, tt.size_t, tt.HasherType, tt.POINTER(ct.c_byte)]
-    CLIB.b58check.restype = ct.c_int
+    # void poly1305_auth(char mac[16], const char *m, size_t bytes, const char key[32])
+    CLIB.poly1305_auth.argtypes = [ct.c_ubyte * 16, tt.POINTER(ct.c_ubyte), tt.size_t, ct.c_ubyte * 32]
     
-    # bool b58enc(char *b58, size_t *b58sz, const void *data, size_t binsz)
-    CLIB.b58enc.argtypes = [tt.POINTER(ct.c_byte), tt.POINTER(tt.size_t), ct.c_void_p, tt.size_t]
-    CLIB.b58enc.restype = ct.c_bool
+    # int poly1305_verify(const char mac1[16], const char mac2[16])
+    CLIB.poly1305_verify.argtypes = [ct.c_ubyte * 16, ct.c_ubyte * 16]
+    CLIB.poly1305_verify.restype = ct.c_int
+    
+    # int poly1305_power_on_self_test(void)
+    CLIB.poly1305_power_on_self_test.argtypes = []
+    CLIB.poly1305_power_on_self_test.restype = ct.c_int
+    
+    # void xchacha20poly1305_init(chacha20poly1305_ctx *ctx, uint8_t key[32], uint8_t nonce[24])
+    CLIB.xchacha20poly1305_init.argtypes = [tt.POINTER(tt.chacha20poly1305_ctx), tt.uint8_t * 32, tt.uint8_t * 24]
+    
+    # void chacha20poly1305_encrypt(chacha20poly1305_ctx *ctx, uint8_t *in, uint8_t *out, size_t n)
+    CLIB.chacha20poly1305_encrypt.argtypes = [tt.POINTER(tt.chacha20poly1305_ctx), tt.POINTER(tt.uint8_t), tt.POINTER(tt.uint8_t), tt.size_t]
+    
+    # void chacha20poly1305_decrypt(chacha20poly1305_ctx *ctx, uint8_t *in, uint8_t *out, size_t n)
+    CLIB.chacha20poly1305_decrypt.argtypes = [tt.POINTER(tt.chacha20poly1305_ctx), tt.POINTER(tt.uint8_t), tt.POINTER(tt.uint8_t), tt.size_t]
+    
+    # void chacha20poly1305_auth(chacha20poly1305_ctx *ctx, uint8_t *in, size_t n)
+    CLIB.chacha20poly1305_auth.argtypes = [tt.POINTER(tt.chacha20poly1305_ctx), tt.POINTER(tt.uint8_t), tt.size_t]
+    
+    # void chacha20poly1305_finish(chacha20poly1305_ctx *ctx, uint8_t mac[16])
+    CLIB.chacha20poly1305_finish.argtypes = [tt.POINTER(tt.chacha20poly1305_ctx), tt.uint8_t * 16]
+    
+    # void rfc7539_init(chacha20poly1305_ctx *ctx, uint8_t key[32], uint8_t nonce[12])
+    CLIB.rfc7539_init.argtypes = [tt.POINTER(tt.chacha20poly1305_ctx), tt.uint8_t * 32, tt.uint8_t * 12]
+    
+    # void rfc7539_auth(chacha20poly1305_ctx *ctx, uint8_t *in, size_t n)
+    CLIB.rfc7539_auth.argtypes = [tt.POINTER(tt.chacha20poly1305_ctx), tt.POINTER(tt.uint8_t), tt.size_t]
+    
+    # void rfc7539_finish(chacha20poly1305_ctx *ctx, int64_t alen, int64_t plen, uint8_t mac[16])
+    CLIB.rfc7539_finish.argtypes = [tt.POINTER(tt.chacha20poly1305_ctx), tt.int64_t, tt.int64_t, tt.uint8_t * 16]
     
     # int xmr_base58_addr_encode_check(uint64_t tag, const uint8_t *data, size_t binsz, char *b58, size_t b58sz)
     CLIB.xmr_base58_addr_encode_check.argtypes = [tt.uint64_t, tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(ct.c_byte), tt.size_t]
@@ -806,36 +907,52 @@ def setup_lib(CLIB):
 #
 
 
-def random32(): 
-    return int(CLIB.random32())
+def address_prefix_bytes_len(address_type): 
+    return int(CLIB.address_prefix_bytes_len(address_type))
 
 
-def random_buffer(buf, len): 
-    CLIB.random_buffer(buf, len)
+def address_write_prefix_bytes(address_type, out): 
+    CLIB.address_write_prefix_bytes(address_type, out)
 
 
-def random_buffer_r(len): 
-    buf = (tt.uint8_t)()
-    CLIB.random_buffer(buf, len)
-    return bytes(buf)
+def address_write_prefix_bytes_r(address_type): 
+    out = (tt.uint8_t)()
+    CLIB.address_write_prefix_bytes(address_type, out)
+    return int(out)
 
 
-def random_uniform(n): 
-    return int(CLIB.random_uniform(n))
+def address_check_prefix(addr, address_type): 
+    return int(CLIB.address_check_prefix(addr, address_type))
 
 
-def random_permute(buf, len): 
-    CLIB.random_permute(buf, len)
+def base32_encode(in_, inlen, out, outlen, alphabet): 
+    return bytes(CLIB.base32_encode(in_, inlen, out, outlen, alphabet))
 
 
-def random_permute_r(len): 
-    buf = (ct.c_byte)()
-    CLIB.random_permute(buf, len)
-    return bytes(buf)
+def base32_encode_unsafe(in_, inlen, out): 
+    CLIB.base32_encode_unsafe(in_, inlen, out)
 
 
-def random_init(): 
-    return int(CLIB.random_init())
+def base32_encode_unsafe_r(in_, inlen): 
+    out = (tt.uint8_t)()
+    CLIB.base32_encode_unsafe(in_, inlen, out)
+    return bytes(out)
+
+
+def base32_decode(in_, inlen, out, outlen, alphabet): 
+    return bytes(CLIB.base32_decode(in_, inlen, out, outlen, alphabet))
+
+
+def base32_decode_unsafe(in_, inlen, out, alphabet): 
+    return int(CLIB.base32_decode_unsafe(in_, inlen, out, alphabet))
+
+
+def base32_encoded_length(inlen): 
+    return int(CLIB.base32_encoded_length(inlen))
+
+
+def base32_decoded_length(inlen): 
+    return int(CLIB.base32_decoded_length(inlen))
 
 
 def sha1_Transform(state_in, data, state_out): 
@@ -1249,6 +1366,65 @@ def groestl512_DoubleTrunc_r():
     return cc, dst
 
 
+def blake2b_Init(S, outlen): 
+    return int(CLIB.blake2b_Init(ct.byref(S), outlen))
+
+
+def blake2b_Init_r(outlen): 
+    S = (tt.blake2b_state)()
+    _res = CLIB.blake2b_Init(ct.byref(S), outlen)
+    return int(_res), S
+
+
+def blake2b_InitKey(S, outlen, key, keylen): 
+    return int(CLIB.blake2b_InitKey(ct.byref(S), outlen, ct.byref(key), keylen))
+
+
+def blake2b_InitKey_r(outlen, key, keylen): 
+    S = (tt.blake2b_state)()
+    _res = CLIB.blake2b_InitKey(ct.byref(S), outlen, ct.byref(key), keylen)
+    return int(_res), S
+
+
+def blake2b_InitPersonal(S, outlen, personal, personal_len): 
+    return int(CLIB.blake2b_InitPersonal(ct.byref(S), outlen, ct.byref(personal), personal_len))
+
+
+def blake2b_InitPersonal_r(outlen, personal, personal_len): 
+    S = (tt.blake2b_state)()
+    _res = CLIB.blake2b_InitPersonal(ct.byref(S), outlen, ct.byref(personal), personal_len)
+    return int(_res), S
+
+
+def blake2b_Update(S, pin, inlen): 
+    return int(CLIB.blake2b_Update(ct.byref(S), ct.byref(pin), inlen))
+
+
+def blake2b_Update_r(pin, inlen): 
+    S = (tt.blake2b_state)()
+    _res = CLIB.blake2b_Update(ct.byref(S), ct.byref(pin), inlen)
+    return int(_res), S
+
+
+def blake2b_Final(S, out, outlen): 
+    return int(CLIB.blake2b_Final(ct.byref(S), ct.byref(out), outlen))
+
+
+def blake2b_Final_r(outlen): 
+    S = (tt.blake2b_state)()
+    out = (ct.c_void_p)()
+    _res = CLIB.blake2b_Final(ct.byref(S), ct.byref(out), outlen)
+    return int(_res), S, out
+
+
+def blake2b(msg, msg_len, out, outlen): 
+    return int(CLIB.blake2b(msg, msg_len, ct.byref(out), outlen))
+
+
+def blake2b_Key(msg, msg_len, key, keylen, out, outlen): 
+    return int(CLIB.blake2b_Key(msg, msg_len, ct.byref(key), keylen, ct.byref(out), outlen))
+
+
 def hasher_Init(hasher, type): 
     CLIB.hasher_Init(ct.byref(hasher), type)
 
@@ -1299,6 +1475,72 @@ def hasher_Raw_r(data, length, hash):
     type = (tt.HasherType)()
     CLIB.hasher_Raw(type, data, length, hash)
     return type
+
+
+def base58_encode_check(data, len, hasher_type, str, strsize): 
+    return int(CLIB.base58_encode_check(data, len, hasher_type, str, strsize))
+
+
+def base58_decode_check(str, hasher_type, data, datalen): 
+    return int(CLIB.base58_decode_check(str, hasher_type, data, datalen))
+
+
+def b58tobin(bin, binszp, b58): 
+    return int(CLIB.b58tobin(ct.byref(bin), ct.byref(binszp), b58))
+
+
+def b58tobin_r(b58): 
+    bin = (ct.c_void_p)()
+    binszp = (tt.size_t)()
+    _res = CLIB.b58tobin(ct.byref(bin), ct.byref(binszp), b58)
+    return int(_res), bin, binszp
+
+
+def b58check(bin, binsz, hasher_type, base58str): 
+    return int(CLIB.b58check(ct.byref(bin), binsz, hasher_type, base58str))
+
+
+def b58enc(b58, b58sz, data, binsz): 
+    return int(CLIB.b58enc(b58, ct.byref(b58sz), ct.byref(data), binsz))
+
+
+def b58enc_r(data, binsz): 
+    b58 = (ct.c_byte)()
+    b58sz = (tt.size_t)()
+    _res = CLIB.b58enc(b58, ct.byref(b58sz), ct.byref(data), binsz)
+    return int(_res), bytes(b58), b58sz
+
+
+def random32(): 
+    return int(CLIB.random32())
+
+
+def random_buffer(buf, len): 
+    CLIB.random_buffer(buf, len)
+
+
+def random_buffer_r(len): 
+    buf = (tt.uint8_t)()
+    CLIB.random_buffer(buf, len)
+    return bytes(buf)
+
+
+def random_uniform(n): 
+    return int(CLIB.random_uniform(n))
+
+
+def random_permute(buf, len): 
+    CLIB.random_permute(buf, len)
+
+
+def random_permute_r(len): 
+    buf = (ct.c_byte)()
+    CLIB.random_permute(buf, len)
+    return bytes(buf)
+
+
+def random_init(): 
+    return int(CLIB.random_init())
 
 
 def hmac_sha256_Init(hctx, key, keylen): 
@@ -1843,68 +2085,200 @@ def bn_format(amnt, prefix, suffix, decimals, exponent, trailing, out, outlen):
     return int(CLIB.bn_format(ct.byref(amnt), prefix, suffix, decimals, exponent, trailing, out, outlen))
 
 
-def base32_encode(in_, inlen, out, outlen, alphabet): 
-    return bytes(CLIB.base32_encode(in_, inlen, out, outlen, alphabet))
+def ECRYPT_init(): 
+    CLIB.ECRYPT_init()
 
 
-def base32_encode_unsafe(in_, inlen, out): 
-    CLIB.base32_encode_unsafe(in_, inlen, out)
+def ECRYPT_keysetup(ctx, key, keysize, ivsize): 
+    CLIB.ECRYPT_keysetup(ct.byref(ctx), ct.byref(key), keysize, ivsize)
 
 
-def base32_encode_unsafe_r(in_, inlen): 
+def ECRYPT_keysetup_r(key, keysize, ivsize): 
+    ctx = (tt.ECRYPT_ctx)()
+    CLIB.ECRYPT_keysetup(ct.byref(ctx), ct.byref(key), keysize, ivsize)
+    return ctx
+
+
+def ECRYPT_ivsetup(ctx, iv): 
+    CLIB.ECRYPT_ivsetup(ct.byref(ctx), ct.byref(iv))
+
+
+def ECRYPT_ivsetup_r(iv): 
+    ctx = (tt.ECRYPT_ctx)()
+    CLIB.ECRYPT_ivsetup(ct.byref(ctx), ct.byref(iv))
+    return ctx
+
+
+def ECRYPT_encrypt_bytes(ctx, plaintext, ciphertext, msglen): 
+    CLIB.ECRYPT_encrypt_bytes(ct.byref(ctx), ct.byref(plaintext), ct.byref(ciphertext), msglen)
+
+
+def ECRYPT_encrypt_bytes_r(plaintext, ciphertext, msglen): 
+    ctx = (tt.ECRYPT_ctx)()
+    CLIB.ECRYPT_encrypt_bytes(ct.byref(ctx), ct.byref(plaintext), ct.byref(ciphertext), msglen)
+    return ctx
+
+
+def ECRYPT_decrypt_bytes(ctx, ciphertext, plaintext, msglen): 
+    CLIB.ECRYPT_decrypt_bytes(ct.byref(ctx), ct.byref(ciphertext), ct.byref(plaintext), msglen)
+
+
+def ECRYPT_decrypt_bytes_r(ciphertext, plaintext, msglen): 
+    ctx = (tt.ECRYPT_ctx)()
+    CLIB.ECRYPT_decrypt_bytes(ct.byref(ctx), ct.byref(ciphertext), ct.byref(plaintext), msglen)
+    return ctx
+
+
+def ECRYPT_keystream_bytes(ctx, keystream, length): 
+    CLIB.ECRYPT_keystream_bytes(ct.byref(ctx), ct.byref(keystream), length)
+
+
+def ECRYPT_keystream_bytes_r(): 
+    ctx = (tt.ECRYPT_ctx)()
+    keystream = (tt.u8)()
+    length = (tt.u32)()
+    CLIB.ECRYPT_keystream_bytes(ct.byref(ctx), ct.byref(keystream), length)
+    return ctx, keystream, length
+
+
+def poly1305_init(ctx, key): 
+    CLIB.poly1305_init(ct.byref(ctx), key)
+
+
+def poly1305_init_r(key): 
+    ctx = (tt.poly1305_context)()
+    CLIB.poly1305_init(ct.byref(ctx), key)
+    return ctx
+
+
+def poly1305_update(ctx, m, bytes): 
+    CLIB.poly1305_update(ct.byref(ctx), m, bytes)
+
+
+def poly1305_update_r(m, bytes): 
+    ctx = (tt.poly1305_context)()
+    CLIB.poly1305_update(ct.byref(ctx), m, bytes)
+    return ctx
+
+
+def poly1305_finish(ctx, mac): 
+    CLIB.poly1305_finish(ct.byref(ctx), mac)
+
+
+def poly1305_finish_r(): 
+    ctx = (tt.poly1305_context)()
+    mac = (ct.c_ubyte * 16)()
+    CLIB.poly1305_finish(ct.byref(ctx), mac)
+    return ctx, bytes(mac)
+
+
+def poly1305_auth(mac, m, bytes, key): 
+    CLIB.poly1305_auth(mac, m, bytes, key)
+
+
+def poly1305_auth_r(m, bytes, key): 
+    mac = (ct.c_ubyte * 16)()
+    CLIB.poly1305_auth(mac, m, bytes, key)
+    return bytes(mac)
+
+
+def poly1305_verify(mac1, mac2): 
+    return int(CLIB.poly1305_verify(mac1, mac2))
+
+
+def poly1305_power_on_self_test(): 
+    return int(CLIB.poly1305_power_on_self_test())
+
+
+def xchacha20poly1305_init(ctx, key, nonce): 
+    CLIB.xchacha20poly1305_init(ct.byref(ctx), key, nonce)
+
+
+def xchacha20poly1305_init_r(): 
+    ctx = (tt.chacha20poly1305_ctx)()
+    key = (tt.uint8_t * 32)()
+    nonce = (tt.uint8_t * 24)()
+    CLIB.xchacha20poly1305_init(ct.byref(ctx), key, nonce)
+    return ctx, bytes(key), bytes(nonce)
+
+
+def chacha20poly1305_encrypt(ctx, in_, out, n): 
+    CLIB.chacha20poly1305_encrypt(ct.byref(ctx), in_, out, n)
+
+
+def chacha20poly1305_encrypt_r(n): 
+    ctx = (tt.chacha20poly1305_ctx)()
+    in_ = (tt.uint8_t)()
     out = (tt.uint8_t)()
-    CLIB.base32_encode_unsafe(in_, inlen, out)
-    return bytes(out)
+    CLIB.chacha20poly1305_encrypt(ct.byref(ctx), in_, out, n)
+    return ctx, bytes(in_), bytes(out)
 
 
-def base32_decode(in_, inlen, out, outlen, alphabet): 
-    return bytes(CLIB.base32_decode(in_, inlen, out, outlen, alphabet))
+def chacha20poly1305_decrypt(ctx, in_, out, n): 
+    CLIB.chacha20poly1305_decrypt(ct.byref(ctx), in_, out, n)
 
 
-def base32_decode_unsafe(in_, inlen, out, alphabet): 
-    return int(CLIB.base32_decode_unsafe(in_, inlen, out, alphabet))
+def chacha20poly1305_decrypt_r(n): 
+    ctx = (tt.chacha20poly1305_ctx)()
+    in_ = (tt.uint8_t)()
+    out = (tt.uint8_t)()
+    CLIB.chacha20poly1305_decrypt(ct.byref(ctx), in_, out, n)
+    return ctx, bytes(in_), bytes(out)
 
 
-def base32_encoded_length(inlen): 
-    return int(CLIB.base32_encoded_length(inlen))
+def chacha20poly1305_auth(ctx, in_, n): 
+    CLIB.chacha20poly1305_auth(ct.byref(ctx), in_, n)
 
 
-def base32_decoded_length(inlen): 
-    return int(CLIB.base32_decoded_length(inlen))
+def chacha20poly1305_auth_r(n): 
+    ctx = (tt.chacha20poly1305_ctx)()
+    in_ = (tt.uint8_t)()
+    CLIB.chacha20poly1305_auth(ct.byref(ctx), in_, n)
+    return ctx, bytes(in_)
 
 
-def base58_encode_check(data, len, hasher_type, str, strsize): 
-    return int(CLIB.base58_encode_check(data, len, hasher_type, str, strsize))
+def chacha20poly1305_finish(ctx, mac): 
+    CLIB.chacha20poly1305_finish(ct.byref(ctx), mac)
 
 
-def base58_decode_check(str, hasher_type, data, datalen): 
-    return int(CLIB.base58_decode_check(str, hasher_type, data, datalen))
+def chacha20poly1305_finish_r(): 
+    ctx = (tt.chacha20poly1305_ctx)()
+    mac = (tt.uint8_t * 16)()
+    CLIB.chacha20poly1305_finish(ct.byref(ctx), mac)
+    return ctx, bytes(mac)
 
 
-def b58tobin(bin, binszp, b58): 
-    return int(CLIB.b58tobin(ct.byref(bin), ct.byref(binszp), b58))
+def rfc7539_init(ctx, key, nonce): 
+    CLIB.rfc7539_init(ct.byref(ctx), key, nonce)
 
 
-def b58tobin_r(b58): 
-    bin = (ct.c_void_p)()
-    binszp = (tt.size_t)()
-    _res = CLIB.b58tobin(ct.byref(bin), ct.byref(binszp), b58)
-    return int(_res), bin, binszp
+def rfc7539_init_r(): 
+    ctx = (tt.chacha20poly1305_ctx)()
+    key = (tt.uint8_t * 32)()
+    nonce = (tt.uint8_t * 12)()
+    CLIB.rfc7539_init(ct.byref(ctx), key, nonce)
+    return ctx, bytes(key), bytes(nonce)
 
 
-def b58check(bin, binsz, hasher_type, base58str): 
-    return int(CLIB.b58check(ct.byref(bin), binsz, hasher_type, base58str))
+def rfc7539_auth(ctx, in_, n): 
+    CLIB.rfc7539_auth(ct.byref(ctx), in_, n)
 
 
-def b58enc(b58, b58sz, data, binsz): 
-    return int(CLIB.b58enc(b58, ct.byref(b58sz), ct.byref(data), binsz))
+def rfc7539_auth_r(n): 
+    ctx = (tt.chacha20poly1305_ctx)()
+    in_ = (tt.uint8_t)()
+    CLIB.rfc7539_auth(ct.byref(ctx), in_, n)
+    return ctx, bytes(in_)
 
 
-def b58enc_r(data, binsz): 
-    b58 = (ct.c_byte)()
-    b58sz = (tt.size_t)()
-    _res = CLIB.b58enc(b58, ct.byref(b58sz), ct.byref(data), binsz)
-    return int(_res), bytes(b58), b58sz
+def rfc7539_finish(ctx, alen, plen, mac): 
+    CLIB.rfc7539_finish(ct.byref(ctx), alen, plen, mac)
+
+
+def rfc7539_finish_r(alen, plen, mac): 
+    ctx = (tt.chacha20poly1305_ctx)()
+    CLIB.rfc7539_finish(ct.byref(ctx), alen, plen, mac)
+    return ctx
 
 
 def xmr_base58_addr_encode_check(tag, data, binsz, b58, b58sz): 
