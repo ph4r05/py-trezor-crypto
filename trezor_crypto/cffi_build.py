@@ -74,6 +74,7 @@ FUNCS_PARAMS = [
     FuncCodeGenPar('xmr_hasher_final', [1], out_inits={1: 'tt.KEY_BUFF()'}, ret_ov='bytes(hash)'),
     FuncCodeGenPar('xmr_hash_to_scalar', no_ct=True, no_ctr=True),
     FuncCodeGenPar('xmr_hash_to_ec', no_ct=True, no_ctr=True),
+    FuncCodeGenPar('xmr_gen_range_sig_ex', no_ctr=True),
     FuncCodeGenPar('groestl512_Init'),
     FuncCodeGenPar('groestl512_Update'),
     FuncCodeGenPar('groestl512_Final'),
