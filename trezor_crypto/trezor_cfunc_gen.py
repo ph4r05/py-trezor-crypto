@@ -900,6 +900,9 @@ def setup_lib(CLIB):
     
     # void xmr_gen_range_sig(xmr_range_sig_t *sig, ge25519 *C, bignum256modm mask, xmr_amount amount, bignum256modm *last_mask)
     CLIB.xmr_gen_range_sig.argtypes = [tt.POINTER(tt.xmr_range_sig_t), tt.POINTER(tt.ge25519), tt.bignum256modm, tt.xmr_amount, tt.POINTER(tt.bignum256modm)]
+    
+    # void xmr_gen_range_sig_ex(xmr_range_sig_t *sig, ge25519 *C, bignum256modm mask, xmr_amount amount, bignum256modm *last_mask, bignum256modm ai[64], bignum256modm alpha[64])
+    CLIB.xmr_gen_range_sig_ex.argtypes = [tt.POINTER(tt.xmr_range_sig_t), tt.POINTER(tt.ge25519), tt.bignum256modm, tt.xmr_amount, tt.POINTER(tt.bignum256modm), tt.bignum256modm * 64, tt.bignum256modm * 64]
 
 
 #
@@ -3197,6 +3200,10 @@ def xmr_gen_range_sig_r(amount, last_mask):
     mask = (tt.bignum256modm)()
     CLIB.xmr_gen_range_sig(ct.byref(sig), ct.byref(C), mask, amount, ct.byref(last_mask))
     return sig, C, mask
+
+
+def xmr_gen_range_sig_ex(sig, C, mask, amount, last_mask, ai, alpha): 
+    CLIB.xmr_gen_range_sig_ex(ct.byref(sig), ct.byref(C), mask, amount, ct.byref(last_mask), ai, alpha)
 
 
 
