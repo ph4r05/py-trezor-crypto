@@ -378,7 +378,6 @@ int curve25519_isnonzero(const bignum25519 f);
 void curve25519_reduce(bignum25519 r, const bignum25519 in);
 void curve25519_expand_reduce(bignum25519 out, const unsigned char in[32]);
 int ge25519_check(const ge25519 *r);
-int ge25519_fromfe_check(const ge25519 *r);
 int ge25519_eq(const ge25519 *a, const ge25519 *b);
 void ge25519_copy(ge25519 *dst, const ge25519 *src);
 void ge25519_set_base(ge25519 *r);

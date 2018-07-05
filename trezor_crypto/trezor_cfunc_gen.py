@@ -784,10 +784,6 @@ def setup_lib(CLIB):
     CLIB.ge25519_check.argtypes = [tt.POINTER(tt.ge25519)]
     CLIB.ge25519_check.restype = ct.c_int
     
-    # int ge25519_fromfe_check(const ge25519 *r)
-    CLIB.ge25519_fromfe_check.argtypes = [tt.POINTER(tt.ge25519)]
-    CLIB.ge25519_fromfe_check.restype = ct.c_int
-    
     # int ge25519_eq(const ge25519 *a, const ge25519 *b)
     CLIB.ge25519_eq.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519)]
     CLIB.ge25519_eq.restype = ct.c_int
@@ -2889,10 +2885,6 @@ def curve25519_expand_reduce_r(in_):
 
 def ge25519_check(r): 
     return int(CLIB.ge25519_check(ct.byref(r)))
-
-
-def ge25519_fromfe_check(r): 
-    return int(CLIB.ge25519_fromfe_check(ct.byref(r)))
 
 
 def ge25519_eq(a, b): 
