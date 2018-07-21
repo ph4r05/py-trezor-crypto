@@ -660,6 +660,10 @@ def setup_lib(CLIB):
     # void expand_raw256_modm(bignum256modm out, const char in[32])
     CLIB.expand_raw256_modm.argtypes = [tt.bignum256modm, ct.c_ubyte * 32]
     
+    # int is_reduced256_modm(const bignum256modm in)
+    CLIB.is_reduced256_modm.argtypes = [tt.bignum256modm]
+    CLIB.is_reduced256_modm.restype = ct.c_int
+    
     # void contract256_modm(char out[32], const bignum256modm in)
     CLIB.contract256_modm.argtypes = [ct.c_ubyte * 32, tt.bignum256modm]
     
@@ -2559,6 +2563,10 @@ def expand_raw256_modm_r(in_):
     out = (tt.bignum256modm)()
     CLIB.expand_raw256_modm(out, in_)
     return out
+
+
+def is_reduced256_modm(in_): 
+    return int(CLIB.is_reduced256_modm(in_))
 
 
 def contract256_modm(out, in_): 
