@@ -450,8 +450,9 @@ def eval_ast(node):
 
 class ArrayEval(c_ast.NodeVisitor):
     def visit_ArrayDecl(self, node):
-        dim_val = eval_ast(node.dim)
-        node.dim = c_ast.Constant('int', '%s' % dim_val)
+        if node.dim is not None:
+            dim_val = eval_ast(node.dim)
+            node.dim = c_ast.Constant('int', '%s' % dim_val)
 
 
 def coord_path(coord):
