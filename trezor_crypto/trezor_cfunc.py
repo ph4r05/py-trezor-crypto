@@ -47,6 +47,10 @@ def curve25519_clone(a):
     return r
 
 
+def new_ge25519():
+    return tt.Ge25519()
+
+
 def ge25519_unpack_vartime_r(buff):
     pt = tt.Ge25519()
     # buff = tt.KEY_BUFF(*buff)
