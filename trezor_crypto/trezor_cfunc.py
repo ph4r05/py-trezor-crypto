@@ -11,6 +11,11 @@ def random_buffer_r(sz):
     return bytes(buff)
 
 
+def init256_modm(r, a):
+    cl().set256_modm(r, ct.c_uint64(a))
+    return r
+
+
 def init256_modm_r(a):
     r = tt.MODM()
     cl().set256_modm(r, ct.c_uint64(a))
