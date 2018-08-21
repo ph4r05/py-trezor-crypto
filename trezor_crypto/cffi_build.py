@@ -68,7 +68,7 @@ FUNCS_PARAMS = [
     FuncCodeGenPar('random_buffer'),
     FuncCodeGenPar('get256_modm', no_ctr=True),
     FuncCodeGenPar('expand256_modm', no_ct=True, no_ctr=True),
-    FuncCodeGenPar('ge25519_unpack_vartime', no_ctr=True),
+    FuncCodeGenPar('ge25519_unpack_vartime', no_ct=True, no_ctr=True),
     FuncCodeGenPar('xmr_fast_hash', no_ctr=True),
     FuncCodeGenPar('xmr_hasher_update', [], no_ct=True, no_ctr=True),
     FuncCodeGenPar('xmr_hasher_final', [1], out_inits={1: 'tt.KEY_BUFF()'}, ret_ov='bytes(hash)'),

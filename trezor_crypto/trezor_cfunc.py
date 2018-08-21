@@ -60,6 +60,13 @@ def ge25519_unpack_vartime_r(buff):
     return pt
 
 
+def ge25519_unpack_vartime(pt, buff):
+    r = cl().ge25519_unpack_vartime(ct.byref(pt), buff)
+    if r != 1:
+        raise ValueError('Point decoding error')
+    return pt
+
+
 def xmr_fast_hash_r(a):
     r = tt.KEY_BUFF()
     cl().xmr_fast_hash(r, a, len(a))
