@@ -114,7 +114,7 @@ int blake2b_Update(blake2b_state *S, const void *pin, size_t inlen);
 int blake2b_Final(blake2b_state *S, void *out, size_t outlen);
 int blake2b(const uint8_t *msg, uint32_t msg_len, void *out, size_t outlen);
 int blake2b_Key(const uint8_t *msg, uint32_t msg_len, const void *key, size_t keylen, void *out, size_t outlen);
-typedef enum {HASHER_SHA2, HASHER_BLAKE, HASHER_SHA2D, HASHER_BLAKED, HASHER_GROESTLD_TRUNC, HASHER_SHA3, HASHER_SHA3K, HASHER_OVERWINTER_PREVOUTS, HASHER_OVERWINTER_SEQUENCE, HASHER_OVERWINTER_OUTPUTS, HASHER_OVERWINTER_PREIMAGE} HasherType;
+typedef enum {HASHER_SHA2, HASHER_SHA2D, HASHER_SHA2_RIPEMD, HASHER_SHA3, HASHER_SHA3K, HASHER_BLAKE, HASHER_BLAKED, HASHER_BLAKE_RIPEMD, HASHER_GROESTLD_TRUNC, HASHER_OVERWINTER_PREVOUTS, HASHER_OVERWINTER_SEQUENCE, HASHER_OVERWINTER_OUTPUTS, HASHER_OVERWINTER_PREIMAGE} HasherType;
 typedef struct 
 {
   HasherType type;
@@ -279,6 +279,9 @@ int xmr_base58_addr_encode_check(uint64_t tag, const uint8_t *data, size_t binsz
 int xmr_base58_addr_decode_check(const char *addr, size_t sz, uint64_t *tag, void *data, size_t datalen);
 bool xmr_base58_encode(char *b58, size_t *b58sz, const void *data, size_t binsz);
 bool xmr_base58_decode(const char *b58, size_t b58sz, void *data, size_t *binsz);
+int xmr_size_varint(uint64_t num);
+int xmr_write_varint(uint8_t *buff, size_t buff_size, uint64_t num);
+int xmr_read_varint(uint8_t *buff, size_t buff_size, uint64_t *val);
 typedef uint32_t bignum25519[10];
 void curve25519_copy(bignum25519 out, const bignum25519 in);
 void curve25519_add(bignum25519 out, const bignum25519 a, const bignum25519 b);
@@ -312,6 +315,15 @@ int is_reduced256_modm(const bignum256modm in);
 void contract256_modm(unsigned char out[32], const bignum256modm in);
 void contract256_window4_modm(signed char r[64], const bignum256modm in);
 void contract256_slidingwindow_modm(signed char r[256], const bignum256modm s, int windowsize);
+void set256_modm(bignum256modm r, uint64_t v);
+int get256_modm(uint64_t *v, const bignum256modm r);
+int eq256_modm(const bignum256modm x, const bignum256modm y);
+int cmp256_modm(const bignum256modm x, const bignum256modm y);
+int iszero256_modm(const bignum256modm x);
+void copy256_modm(bignum256modm r, const bignum256modm x);
+int check256_modm(const bignum256modm x);
+void mulsub256_modm(bignum256modm r, const bignum256modm a, const bignum256modm b, const bignum256modm c);
+void muladd256_modm(bignum256modm r, const bignum256modm a, const bignum256modm b, const bignum256modm c);
 typedef unsigned char hash_512bits[64];
 typedef struct ge25519_t
 {
@@ -363,15 +375,6 @@ void ge25519_set_neutral(ge25519 *r);
 void ge25519_double_scalarmult_vartime(ge25519 *r, const ge25519 *p1, const bignum256modm s1, const bignum256modm s2);
 void ge25519_double_scalarmult_vartime2(ge25519 *r, const ge25519 *p1, const bignum256modm s1, const ge25519 *p2, const bignum256modm s2);
 void ge25519_scalarmult(ge25519 *r, const ge25519 *p1, const bignum256modm s1);
-void set256_modm(bignum256modm r, uint64_t v);
-int get256_modm(uint64_t *v, const bignum256modm r);
-int eq256_modm(const bignum256modm x, const bignum256modm y);
-int cmp256_modm(const bignum256modm x, const bignum256modm y);
-int iszero256_modm(const bignum256modm x);
-void copy256_modm(bignum256modm r, const bignum256modm x);
-int check256_modm(const bignum256modm x);
-void mulsub256_modm(bignum256modm r, const bignum256modm a, const bignum256modm b, const bignum256modm c);
-void muladd256_modm(bignum256modm r, const bignum256modm a, const bignum256modm b, const bignum256modm c);
 void curve25519_set(bignum25519 r, uint32_t x);
 void curve25519_set_d(bignum25519 r);
 void curve25519_set_2d(bignum25519 r);
@@ -393,10 +396,6 @@ void ge25519_add(ge25519 *r, const ge25519 *a, const ge25519 *b, unsigned char s
 void ge25519_fromfe_frombytes_vartime(ge25519 *r, const unsigned char *s);
 int ge25519_unpack_vartime(ge25519 *r, const unsigned char *s);
 void ge25519_scalarmult_base_wrapper(ge25519 *r, const bignum256modm s);
-void ge25519_scalarmult_wrapper(ge25519 *r, const ge25519 *P, const bignum256modm a);
-int xmr_size_varint(uint64_t num);
-int xmr_write_varint(uint8_t *buff, size_t buff_size, uint64_t num);
-int xmr_read_varint(uint8_t *buff, size_t buff_size, uint64_t *val);
 extern const ge25519 xmr_h;
 typedef unsigned char xmr_key_t[32];
 typedef struct xmr_ctkey

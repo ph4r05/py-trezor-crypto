@@ -582,6 +582,18 @@ def setup_lib(CLIB):
     CLIB.xmr_base58_decode.argtypes = [tt.POINTER(ct.c_byte), tt.size_t, ct.c_void_p, tt.POINTER(tt.size_t)]
     CLIB.xmr_base58_decode.restype = ct.c_bool
     
+    # int xmr_size_varint(uint64_t num)
+    CLIB.xmr_size_varint.argtypes = [tt.uint64_t]
+    CLIB.xmr_size_varint.restype = ct.c_int
+    
+    # int xmr_write_varint(uint8_t *buff, size_t buff_size, uint64_t num)
+    CLIB.xmr_write_varint.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.uint64_t]
+    CLIB.xmr_write_varint.restype = ct.c_int
+    
+    # int xmr_read_varint(uint8_t *buff, size_t buff_size, uint64_t *val)
+    CLIB.xmr_read_varint.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(tt.uint64_t)]
+    CLIB.xmr_read_varint.restype = ct.c_int
+    
     # void curve25519_copy(bignum25519 out, const bignum25519 in)
     CLIB.curve25519_copy.argtypes = [tt.bignum25519, tt.bignum25519]
     
@@ -673,6 +685,38 @@ def setup_lib(CLIB):
     # void contract256_slidingwindow_modm(char r[256], const bignum256modm s, int windowsize)
     CLIB.contract256_slidingwindow_modm.argtypes = [ct.c_byte * 256, tt.bignum256modm, ct.c_int]
     
+    # void set256_modm(bignum256modm r, uint64_t v)
+    CLIB.set256_modm.argtypes = [tt.bignum256modm, tt.uint64_t]
+    
+    # int get256_modm(uint64_t *v, const bignum256modm r)
+    CLIB.get256_modm.argtypes = [tt.POINTER(tt.uint64_t), tt.bignum256modm]
+    CLIB.get256_modm.restype = ct.c_int
+    
+    # int eq256_modm(const bignum256modm x, const bignum256modm y)
+    CLIB.eq256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm]
+    CLIB.eq256_modm.restype = ct.c_int
+    
+    # int cmp256_modm(const bignum256modm x, const bignum256modm y)
+    CLIB.cmp256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm]
+    CLIB.cmp256_modm.restype = ct.c_int
+    
+    # int iszero256_modm(const bignum256modm x)
+    CLIB.iszero256_modm.argtypes = [tt.bignum256modm]
+    CLIB.iszero256_modm.restype = ct.c_int
+    
+    # void copy256_modm(bignum256modm r, const bignum256modm x)
+    CLIB.copy256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm]
+    
+    # int check256_modm(const bignum256modm x)
+    CLIB.check256_modm.argtypes = [tt.bignum256modm]
+    CLIB.check256_modm.restype = ct.c_int
+    
+    # void mulsub256_modm(bignum256modm r, const bignum256modm a, const bignum256modm b, const bignum256modm c)
+    CLIB.mulsub256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm, tt.bignum256modm, tt.bignum256modm]
+    
+    # void muladd256_modm(bignum256modm r, const bignum256modm a, const bignum256modm b, const bignum256modm c)
+    CLIB.muladd256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm, tt.bignum256modm, tt.bignum256modm]
+    
     # int ed25519_verify(const char *x, const char *y, size_t len)
     CLIB.ed25519_verify.argtypes = [tt.POINTER(ct.c_ubyte), tt.POINTER(ct.c_ubyte), tt.size_t]
     CLIB.ed25519_verify.restype = ct.c_int
@@ -725,38 +769,6 @@ def setup_lib(CLIB):
     
     # void ge25519_scalarmult(ge25519 *r, const ge25519 *p1, const bignum256modm s1)
     CLIB.ge25519_scalarmult.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519), tt.bignum256modm]
-    
-    # void set256_modm(bignum256modm r, uint64_t v)
-    CLIB.set256_modm.argtypes = [tt.bignum256modm, tt.uint64_t]
-    
-    # int get256_modm(uint64_t *v, const bignum256modm r)
-    CLIB.get256_modm.argtypes = [tt.POINTER(tt.uint64_t), tt.bignum256modm]
-    CLIB.get256_modm.restype = ct.c_int
-    
-    # int eq256_modm(const bignum256modm x, const bignum256modm y)
-    CLIB.eq256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm]
-    CLIB.eq256_modm.restype = ct.c_int
-    
-    # int cmp256_modm(const bignum256modm x, const bignum256modm y)
-    CLIB.cmp256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm]
-    CLIB.cmp256_modm.restype = ct.c_int
-    
-    # int iszero256_modm(const bignum256modm x)
-    CLIB.iszero256_modm.argtypes = [tt.bignum256modm]
-    CLIB.iszero256_modm.restype = ct.c_int
-    
-    # void copy256_modm(bignum256modm r, const bignum256modm x)
-    CLIB.copy256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm]
-    
-    # int check256_modm(const bignum256modm x)
-    CLIB.check256_modm.argtypes = [tt.bignum256modm]
-    CLIB.check256_modm.restype = ct.c_int
-    
-    # void mulsub256_modm(bignum256modm r, const bignum256modm a, const bignum256modm b, const bignum256modm c)
-    CLIB.mulsub256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm, tt.bignum256modm, tt.bignum256modm]
-    
-    # void muladd256_modm(bignum256modm r, const bignum256modm a, const bignum256modm b, const bignum256modm c)
-    CLIB.muladd256_modm.argtypes = [tt.bignum256modm, tt.bignum256modm, tt.bignum256modm, tt.bignum256modm]
     
     # void curve25519_set(bignum25519 r, uint32_t x)
     CLIB.curve25519_set.argtypes = [tt.bignum25519, tt.uint32_t]
@@ -825,21 +837,6 @@ def setup_lib(CLIB):
     
     # void ge25519_scalarmult_base_wrapper(ge25519 *r, const bignum256modm s)
     CLIB.ge25519_scalarmult_base_wrapper.argtypes = [tt.POINTER(tt.ge25519), tt.bignum256modm]
-    
-    # void ge25519_scalarmult_wrapper(ge25519 *r, const ge25519 *P, const bignum256modm a)
-    CLIB.ge25519_scalarmult_wrapper.argtypes = [tt.POINTER(tt.ge25519), tt.POINTER(tt.ge25519), tt.bignum256modm]
-    
-    # int xmr_size_varint(uint64_t num)
-    CLIB.xmr_size_varint.argtypes = [tt.uint64_t]
-    CLIB.xmr_size_varint.restype = ct.c_int
-    
-    # int xmr_write_varint(uint8_t *buff, size_t buff_size, uint64_t num)
-    CLIB.xmr_write_varint.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.uint64_t]
-    CLIB.xmr_write_varint.restype = ct.c_int
-    
-    # int xmr_read_varint(uint8_t *buff, size_t buff_size, uint64_t *val)
-    CLIB.xmr_read_varint.argtypes = [tt.POINTER(tt.uint8_t), tt.size_t, tt.POINTER(tt.uint64_t)]
-    CLIB.xmr_read_varint.restype = ct.c_int
     
     # void ge25519_set_xmr_h(ge25519 *r)
     CLIB.ge25519_set_xmr_h.argtypes = [tt.POINTER(tt.ge25519)]
@@ -2314,6 +2311,30 @@ def xmr_base58_decode_r(b58, b58sz):
     return int(_res), bytes(data), int(binsz)
 
 
+def xmr_size_varint(num): 
+    return int(CLIB.xmr_size_varint(num))
+
+
+def xmr_write_varint(buff, buff_size, num): 
+    return int(CLIB.xmr_write_varint(buff, buff_size, num))
+
+
+def xmr_write_varint_r(buff_size, num): 
+    buff = (tt.uint8_t)()
+    _res = CLIB.xmr_write_varint(buff, buff_size, num)
+    return int(_res), bytes(buff)
+
+
+def xmr_read_varint(buff, buff_size, val): 
+    return int(CLIB.xmr_read_varint(buff, buff_size, ct.byref(val)))
+
+
+def xmr_read_varint_r(buff_size, val): 
+    buff = (tt.uint8_t)()
+    _res = CLIB.xmr_read_varint(buff, buff_size, ct.byref(val))
+    return int(_res), bytes(buff)
+
+
 def curve25519_copy(out, in_): 
     CLIB.curve25519_copy(out, in_)
 
@@ -2599,6 +2620,66 @@ def contract256_slidingwindow_modm_r(s, windowsize):
     return bytes(r)
 
 
+def set256_modm(r, v): 
+    CLIB.set256_modm(r, v)
+
+
+def set256_modm_r(v): 
+    r = (tt.bignum256modm)()
+    CLIB.set256_modm(r, v)
+    return r
+
+
+def get256_modm(v, r): 
+    return int(CLIB.get256_modm(ct.byref(v), r))
+
+
+def eq256_modm(x, y): 
+    return int(CLIB.eq256_modm(x, y))
+
+
+def cmp256_modm(x, y): 
+    return int(CLIB.cmp256_modm(x, y))
+
+
+def iszero256_modm(x): 
+    return int(CLIB.iszero256_modm(x))
+
+
+def copy256_modm(r, x): 
+    CLIB.copy256_modm(r, x)
+
+
+def copy256_modm_r(x): 
+    r = (tt.bignum256modm)()
+    CLIB.copy256_modm(r, x)
+    return r
+
+
+def check256_modm(x): 
+    return int(CLIB.check256_modm(x))
+
+
+def mulsub256_modm(r, a, b, c): 
+    CLIB.mulsub256_modm(r, a, b, c)
+
+
+def mulsub256_modm_r(a, b, c): 
+    r = (tt.bignum256modm)()
+    CLIB.mulsub256_modm(r, a, b, c)
+    return r
+
+
+def muladd256_modm(r, a, b, c): 
+    CLIB.muladd256_modm(r, a, b, c)
+
+
+def muladd256_modm_r(a, b, c): 
+    r = (tt.bignum256modm)()
+    CLIB.muladd256_modm(r, a, b, c)
+    return r
+
+
 def ed25519_verify(x, y, len): 
     return int(CLIB.ed25519_verify(x, y, len))
 
@@ -2760,66 +2841,6 @@ def ge25519_scalarmult(r, p1, s1):
 def ge25519_scalarmult_r(p1, s1): 
     r = (tt.ge25519)()
     CLIB.ge25519_scalarmult(ct.byref(r), ct.byref(p1), s1)
-    return r
-
-
-def set256_modm(r, v): 
-    CLIB.set256_modm(r, v)
-
-
-def set256_modm_r(v): 
-    r = (tt.bignum256modm)()
-    CLIB.set256_modm(r, v)
-    return r
-
-
-def get256_modm(v, r): 
-    return int(CLIB.get256_modm(ct.byref(v), r))
-
-
-def eq256_modm(x, y): 
-    return int(CLIB.eq256_modm(x, y))
-
-
-def cmp256_modm(x, y): 
-    return int(CLIB.cmp256_modm(x, y))
-
-
-def iszero256_modm(x): 
-    return int(CLIB.iszero256_modm(x))
-
-
-def copy256_modm(r, x): 
-    CLIB.copy256_modm(r, x)
-
-
-def copy256_modm_r(x): 
-    r = (tt.bignum256modm)()
-    CLIB.copy256_modm(r, x)
-    return r
-
-
-def check256_modm(x): 
-    return int(CLIB.check256_modm(x))
-
-
-def mulsub256_modm(r, a, b, c): 
-    CLIB.mulsub256_modm(r, a, b, c)
-
-
-def mulsub256_modm_r(a, b, c): 
-    r = (tt.bignum256modm)()
-    CLIB.mulsub256_modm(r, a, b, c)
-    return r
-
-
-def muladd256_modm(r, a, b, c): 
-    CLIB.muladd256_modm(r, a, b, c)
-
-
-def muladd256_modm_r(a, b, c): 
-    r = (tt.bignum256modm)()
-    CLIB.muladd256_modm(r, a, b, c)
     return r
 
 
@@ -2989,10 +3010,6 @@ def ge25519_fromfe_frombytes_vartime_r(s):
     return r
 
 
-def ge25519_unpack_vartime(r, s): 
-    return int(CLIB.ge25519_unpack_vartime(ct.byref(r), s))
-
-
 def ge25519_scalarmult_base_wrapper(r, s): 
     CLIB.ge25519_scalarmult_base_wrapper(ct.byref(r), s)
 
@@ -3001,40 +3018,6 @@ def ge25519_scalarmult_base_wrapper_r(s):
     r = (tt.ge25519)()
     CLIB.ge25519_scalarmult_base_wrapper(ct.byref(r), s)
     return r
-
-
-def ge25519_scalarmult_wrapper(r, P, a): 
-    CLIB.ge25519_scalarmult_wrapper(ct.byref(r), ct.byref(P), a)
-
-
-def ge25519_scalarmult_wrapper_r(P, a): 
-    r = (tt.ge25519)()
-    CLIB.ge25519_scalarmult_wrapper(ct.byref(r), ct.byref(P), a)
-    return r
-
-
-def xmr_size_varint(num): 
-    return int(CLIB.xmr_size_varint(num))
-
-
-def xmr_write_varint(buff, buff_size, num): 
-    return int(CLIB.xmr_write_varint(buff, buff_size, num))
-
-
-def xmr_write_varint_r(buff_size, num): 
-    buff = (tt.uint8_t)()
-    _res = CLIB.xmr_write_varint(buff, buff_size, num)
-    return int(_res), bytes(buff)
-
-
-def xmr_read_varint(buff, buff_size, val): 
-    return int(CLIB.xmr_read_varint(buff, buff_size, ct.byref(val)))
-
-
-def xmr_read_varint_r(buff_size, val): 
-    buff = (tt.uint8_t)()
-    _res = CLIB.xmr_read_varint(buff, buff_size, ct.byref(val))
-    return int(_res), bytes(buff)
 
 
 def ge25519_set_xmr_h(r): 

@@ -107,16 +107,18 @@ class struct_c__SA_curve_info(ctypes.Structure):
 
 # values for enumeration 'c__EA_HasherType'
 HASHER_SHA2 = 0
-HASHER_BLAKE = 1
-HASHER_SHA2D = 2
-HASHER_BLAKED = 3
-HASHER_GROESTLD_TRUNC = 4
-HASHER_SHA3 = 5
-HASHER_SHA3K = 6
-HASHER_OVERWINTER_PREVOUTS = 7
-HASHER_OVERWINTER_SEQUENCE = 8
-HASHER_OVERWINTER_OUTPUTS = 9
-HASHER_OVERWINTER_PREIMAGE = 10
+HASHER_SHA2D = 1
+HASHER_SHA2_RIPEMD = 2
+HASHER_SHA3 = 3
+HASHER_SHA3K = 4
+HASHER_BLAKE = 5
+HASHER_BLAKED = 6
+HASHER_BLAKE_RIPEMD = 7
+HASHER_GROESTLD_TRUNC = 8
+HASHER_OVERWINTER_PREVOUTS = 9
+HASHER_OVERWINTER_SEQUENCE = 10
+HASHER_OVERWINTER_OUTPUTS = 11
+HASHER_OVERWINTER_PREIMAGE = 12
 c__EA_HasherType = ctypes.c_int # enum
 HasherType = c__EA_HasherType
 class struct_c__SA_ecdsa_curve(ctypes.Structure):
@@ -145,10 +147,10 @@ struct_c__SA_curve_info._pack_ = True # source:False
 struct_c__SA_curve_info._fields_ = [
     ('bip32_name', POINTER_T(ctypes.c_char)),
     ('params', POINTER_T(struct_c__SA_ecdsa_curve)),
-    ('hasher_bip32', HasherType),
     ('hasher_base58', HasherType),
     ('hasher_sign', HasherType),
     ('hasher_pubkey', HasherType),
+    ('PADDING_0', ctypes.c_ubyte * 4),
 ]
 
 curve_info = struct_c__SA_curve_info
@@ -320,6 +322,12 @@ ed25519_public_key = ctypes.c_ubyte * 32
 ed25519_secret_key = ctypes.c_ubyte * 32
 bignum256modm_element_t = ctypes.c_uint32
 bignum256modm = ctypes.c_uint32 * 9
+class struct_c_groestlDOTh_S_groestlDOTh_2155(ctypes.Structure):
+    _pack_ = True # source:False
+    _fields_ = [
+    ('PADDING_0', ctypes.c_ubyte),
+     ]
+
 class struct_c__SA_sph_groestl_big_context(ctypes.Structure):
     pass
 
@@ -337,12 +345,6 @@ struct_c__SA_sph_groestl_big_context._fields_ = [
     ('state', union_c__SA_sph_groestl_big_context_0),
     ('count', ctypes.c_uint64),
 ]
-
-class struct_c_groestlDOTh_S_groestlDOTh_2155(ctypes.Structure):
-    _pack_ = True # source:False
-    _fields_ = [
-    ('PADDING_0', ctypes.c_ubyte),
-     ]
 
 sph_groestl_big_context = struct_c__SA_sph_groestl_big_context
 GROESTL512_CTX = struct_c__SA_sph_groestl_big_context
@@ -527,59 +529,60 @@ SHA1_CTX = struct__SHA1_CTX
 sha256_initial_hash_value = [] # Variable ctypes.c_uint32 * 8
 sha512_initial_hash_value = [] # Variable ctypes.c_uint64 * 8
 __all__ = \
-    ['struct_c__SA_ECRYPT_ctx', 'SHA256_CTX',
-    'HASHER_OVERWINTER_PREVOUTS', 'struct_range_sig',
-    'BLAKE2S_KEYBYTES', 'secp256k1_groestl_info', 'b58digits_ordered',
-    'struct_c__SA_aes_encrypt_ctx', 's8', 'secp256k1',
-    'BASE32_ALPHABET_RFC4648', 'aes_decrypt_ctx', 'BLAKE2S_OUTBYTES',
-    'hash_512bits', 'ge25519', 'struct_c__SA_rfc6979_state',
-    'ED25519_NAME', 'sha512_initial_hash_value',
-    'ED25519_KECCAK_NAME', 'struct_c__SA_nem_transaction_ctx',
-    'bignum256', 'struct_c__SA_Hasher', 'BLAKE2S_SALTBYTES', 's32',
-    'ge25519_p1p1', 'BLAKE256_CTX', 'int32_t', 'ed25519_secret_key',
-    'HASHER_SHA3', 'struct_ge25519_t', 'xmr_key64_t', 'uint32_t',
-    'curve_point', 'struct_c__SA_HDNode', 'u8', 'HMAC_SHA512_CTX',
-    'PBKDF2_HMAC_SHA512_CTX', 'poly1305_context',
-    'struct_poly1305_state_internal_t',
-    'struct_c__SA_sph_groestl_big_context', 'xmr_range_sig_t',
-    'secp256k1_decred_info', 'xmr_amount', 'sph_u32', 'curve_info',
-    'struct_c__SA_ecdsa_curve', 'nist256p1_info', 'u32',
-    'nem_transaction_ctx', 'xmr_key_t', 'xmr_boro_sig_t',
-    'HASHER_BLAKE', 'HASHER_OVERWINTER_OUTPUTS', 'c__EA_HasherType',
-    'BLAKE2S_PERSONALBYTES', 's64', 'HASHER_SHA2D', 'int64_t',
-    'ge25519_niels', 'nist256p1', 'ed25519_signature',
-    'BLAKE2B_BLOCKBYTES', 'ge25519_pniels', 'blake2b_state',
-    'struct_poly1305_context', 'aes_encrypt_ctx',
-    'sph_groestl_big_context', 'SHA512_CTX', 'bignum256modm',
-    'Hasher', 'struct__HMAC_SHA512_CTX', 'HASHER_SHA3K', 'uint8_t',
-    'BLAKE2S_BLOCKBYTES', 'struct_c__SA_chacha20poly1305_ctx',
-    'SECP256K1_NAME', 'bignum25519', 'struct_c__SA_RC4_CTX', 'u64',
-    'cbuf_inc', 'HDNode', 'ECRYPT_ctx', 'struct_ge25519_pniels_t',
-    'HASHER_SHA2', 'SHA3_CTX', 'struct_xmr_ctkey',
-    'HASHER_OVERWINTER_PREIMAGE', 'HasherType',
-    'SECP256K1_DECRED_NAME', 'struct_ge25519_p1p1_t',
-    'ed25519_public_key', 'HMAC_SHA256_CTX', 'SECP256K1_GROESTL_NAME',
-    'chacha20poly1305_ctx', 'HASHER_BLAKED', 'GROESTL512_CTX',
-    'struct__SHA256_CTX', 'struct__RIPEMD160_CTX',
-    'struct_c__SA_aes_decrypt_ctx', 'sha256_initial_hash_value',
-    'u16', 'struct__HMAC_SHA256_CTX', 'RC4_CTX', 'xmr_ctkey_t',
-    'struct_xmr_boro_sig', 'secp256k1_info', 'sph_u64', 'sph_s64',
-    'poly1305_state_internal_t', 'sph_s32', 't_rc',
-    'union_c__UA_aes_inf', 'ED25519_CARDANO_NAME', 'SHA1_CTX',
-    'struct__PBKDF2_HMAC_SHA256_CTX', 'RIPEMD160_CTX',
-    'struct___blake2b_state', 'struct___blake2s_state',
-    'struct_c_groestlDOTh_S_groestlDOTh_2155', 'BLAKE2B_KEYBYTES',
-    'struct_c__SA_curve_point', 'struct_c__SA_curve_info',
-    'PBKDF2_HMAC_SHA256_CTX', 'BLAKE2B_SALTBYTES', 'ecdsa_curve',
-    'BLAKE2B_PERSONALBYTES', 'wordlist', 'struct__SHA512_CTX',
-    'struct_c__SA_BLAKE256_CTX', 'size_t', 'struct_c__SA_bignum256',
-    'union_c__SA_sph_groestl_big_context_0', 'rfc6979_state',
-    'struct__SHA1_CTX', 'uint64_t', 's16', 'union_c__SA_Hasher_0',
-    'blake2b_constant', 'NIST256P1_NAME', 'CURVE25519_NAME',
-    'struct_ge25519_niels_t', 'blake2s_state',
-    'bignum256modm_element_t', 'aes_inf', 'BLAKE2B_OUTBYTES',
-    'struct__PBKDF2_HMAC_SHA512_CTX', 'struct_SHA3_CTX',
-    'ED25519_SHA3_NAME', 'b58digits_map',
-    'HASHER_OVERWINTER_SEQUENCE', 'blake2s_constant',
-    'HASHER_GROESTLD_TRUNC', 'POINTER_T']
+    ['SHA3_CTX', 'poly1305_context', 's32', 'struct_xmr_ctkey',
+    'struct__SHA256_CTX', 'b58digits_map', 'HASHER_GROESTLD_TRUNC',
+    'struct_c__SA_ECRYPT_ctx', 'secp256k1_info', 'SHA1_CTX',
+    'aes_inf', 'xmr_ctkey_t', 'HMAC_SHA256_CTX', 'struct_range_sig',
+    'ge25519_pniels', 'sph_u32', 'RIPEMD160_CTX', 'BLAKE2B_SALTBYTES',
+    'ed25519_public_key', 'blake2s_state', 'sph_groestl_big_context',
+    'ED25519_NAME', 'struct_ge25519_pniels_t',
+    'HASHER_OVERWINTER_SEQUENCE', 'aes_encrypt_ctx',
+    'struct_c__SA_BLAKE256_CTX', 'BLAKE2S_KEYBYTES', 'uint32_t',
+    'curve_point', 'BLAKE2S_SALTBYTES', 'RC4_CTX',
+    'BLAKE2B_PERSONALBYTES', 'aes_decrypt_ctx', 'wordlist',
+    'BASE32_ALPHABET_RFC4648', 'Hasher', 'BLAKE256_CTX',
+    'xmr_range_sig_t', 'size_t', 'nem_transaction_ctx',
+    'HASHER_BLAKE', 'BLAKE2S_PERSONALBYTES',
+    'HASHER_OVERWINTER_OUTPUTS',
+    'struct_c_groestlDOTh_S_groestlDOTh_2155',
+    'struct__PBKDF2_HMAC_SHA256_CTX', 'blake2b_constant',
+    'union_c__SA_Hasher_0', 'blake2b_state', 'struct_SHA3_CTX',
+    'sha512_initial_hash_value', 'secp256k1_groestl_info', 'cbuf_inc',
+    'struct_xmr_boro_sig', 'bignum256', 'SHA512_CTX',
+    'struct_c__SA_chacha20poly1305_ctx', 'int64_t',
+    'struct_c__SA_rfc6979_state',
+    'struct_c__SA_sph_groestl_big_context', 'uint64_t', 'u16',
+    'HASHER_SHA3', 's64', 'BLAKE2B_KEYBYTES', 'int32_t',
+    'xmr_boro_sig_t', 'u64', 'ED25519_KECCAK_NAME', 'uint8_t',
+    'sha256_initial_hash_value', 'struct_c__SA_aes_decrypt_ctx',
+    'struct_c__SA_HDNode', 'sph_u64', 'struct_c__SA_Hasher',
+    'blake2s_constant', 'union_c__SA_sph_groestl_big_context_0',
+    'bignum256modm_element_t', 'struct_c__SA_aes_encrypt_ctx',
+    'chacha20poly1305_ctx', 'struct_ge25519_p1p1_t',
+    'ED25519_SHA3_NAME', 'ecdsa_curve', 'HASHER_OVERWINTER_PREIMAGE',
+    'HASHER_SHA2D', 'HasherType', 'NIST256P1_NAME',
+    'ed25519_secret_key', 'HASHER_SHA2', 'SHA256_CTX',
+    'poly1305_state_internal_t', 'struct___blake2s_state',
+    'HASHER_OVERWINTER_PREVOUTS', 's8', 'struct__SHA1_CTX',
+    'struct_c__SA_nem_transaction_ctx', 'HASHER_SHA2_RIPEMD',
+    'ge25519_p1p1', 'bignum25519', 'struct__PBKDF2_HMAC_SHA512_CTX',
+    'PBKDF2_HMAC_SHA256_CTX', 'u8', 'SECP256K1_NAME', 'HASHER_BLAKED',
+    'struct_c__SA_RC4_CTX', 'c__EA_HasherType',
+    'struct_c__SA_curve_point', 'BLAKE2B_BLOCKBYTES',
+    'struct_c__SA_ecdsa_curve', 'u32', 't_rc', 'HMAC_SHA512_CTX',
+    'xmr_key_t', 'b58digits_ordered', 'struct_c__SA_bignum256',
+    'secp256k1_decred_info', 'secp256k1', 'HASHER_BLAKE_RIPEMD',
+    'SECP256K1_GROESTL_NAME', 'xmr_amount', 'struct_poly1305_context',
+    'nist256p1', 'ECRYPT_ctx', 'hash_512bits', 'struct_ge25519_t',
+    'sph_s64', 'curve_info', 'ge25519_niels', 'ge25519',
+    'BLAKE2S_BLOCKBYTES', 'BLAKE2S_OUTBYTES', 'HASHER_SHA3K',
+    'sph_s32', 'struct___blake2b_state', 'bignum256modm',
+    'struct_ge25519_niels_t', 'PBKDF2_HMAC_SHA512_CTX',
+    'rfc6979_state', 'struct__RIPEMD160_CTX', 'GROESTL512_CTX',
+    'struct_c__SA_curve_info', 'BLAKE2B_OUTBYTES', 'nist256p1_info',
+    'struct__HMAC_SHA512_CTX', 's16', 'ED25519_CARDANO_NAME',
+    'CURVE25519_NAME', 'ed25519_signature', 'struct__HMAC_SHA256_CTX',
+    'SECP256K1_DECRED_NAME', 'union_c__UA_aes_inf', 'HDNode',
+    'struct_poly1305_state_internal_t', 'xmr_key64_t',
+    'struct__SHA512_CTX', 'POINTER_T']
 
