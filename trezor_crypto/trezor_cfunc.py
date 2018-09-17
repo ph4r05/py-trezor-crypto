@@ -30,14 +30,14 @@ def get256_modm_r(a):
     return r.value
 
 
-def expand256_modm(r, buff):
-    cl().expand256_modm(r, buff, len(buff))
+def expand256_modm(r, buff, ln=None):
+    cl().expand256_modm(r, buff, len(buff) if ln is None else ln)
     return r
 
 
-def expand256_modm_r(buff):
+def expand256_modm_r(buff, ln=None):
     m = tt.MODM()
-    cl().expand256_modm(m, buff, len(buff))
+    cl().expand256_modm(m, buff, len(buff) if ln is None else ln)
     return m
 
 
@@ -67,33 +67,33 @@ def ge25519_unpack_vartime(pt, buff):
     return pt
 
 
-def xmr_fast_hash_r(a):
+def xmr_fast_hash_r(a, ln=None):
     r = tt.KEY_BUFF()
-    cl().xmr_fast_hash(r, a, len(a))
+    cl().xmr_fast_hash(r, a, len(a) if ln is None else ln)
     return bytes(r)
 
 
-def xmr_hasher_update(h, buff):
-    cl().xmr_hasher_update(ct.byref(h), buff, len(buff))
+def xmr_hasher_update(h, buff, ln=None):
+    cl().xmr_hasher_update(ct.byref(h), buff, len(buff) if ln is None else ln)
 
 
-def xmr_hash_to_scalar(r, a):
-    return cl().xmr_hash_to_scalar(r, a, len(a))
+def xmr_hash_to_scalar(r, a, ln=None):
+    return cl().xmr_hash_to_scalar(r, a, len(a) if ln is None else ln)
 
 
-def xmr_hash_to_scalar_r(a):
+def xmr_hash_to_scalar_r(a, ln=None):
     r = tt.MODM()
-    cl().xmr_hash_to_scalar(r, a, len(a))
+    cl().xmr_hash_to_scalar(r, a, len(a) if ln is None else ln)
     return r
 
 
-def xmr_hash_to_ec(r, a):
-    return cl().xmr_hash_to_ec(ct.byref(r), a, len(a))
+def xmr_hash_to_ec(r, a, ln=None):
+    return cl().xmr_hash_to_ec(ct.byref(r), a, len(a) if ln is None else ln)
 
 
-def xmr_hash_to_ec_r(a):
+def xmr_hash_to_ec_r(a, ln=None):
     r = tt.Ge25519()
-    cl().xmr_hash_to_ec(ct.byref(r), a, len(a))
+    cl().xmr_hash_to_ec(ct.byref(r), a, len(a) if ln is None else ln)
     return r
 
 
